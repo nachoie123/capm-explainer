@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CAPM Explainer — Retorno esperado paso a paso</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<style>
+/* Neural Noir — deep warm-black, gold/bronze accents, editorial serif, glass */
+:root{
+  --bg:#0A0908; --panel:rgba(232,213,183,.028); --panel-2:#121009;
+  --border:rgba(232,213,183,.12); --border-lit:rgba(201,168,106,.45);
+  --fg:#F2ECE1; --dim:#8F877A;
+  --gold:#C9A86A; --bronze:#A78B71; --champagne:#E8D5B7;
+  --r:18px; --ease:cubic-bezier(.16,1,.3,1);
+  --serif:"Playfair Display",Georgia,serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:Inter,system-ui,sans-serif; color:var(--fg); background:var(--bg);
+  min-height:100vh; line-height:1.55;
+  background-image:
+    radial-gradient(55vw 42vh at 12% -8%, rgba(201,168,106,.14), transparent 62%),
+    radial-gradient(48vw 40vh at 96% -4%, rgba(167,139,113,.10), transparent 58%),
+    linear-gradient(180deg,#0A0908,#080706);
+  background-attachment:fixed;
+}
+.wrap{max-width:840px;margin:0 auto;padding:40px 20px 100px}
+header h1{font-family:var(--serif);font-size:clamp(30px,5vw,46px);font-weight:600;letter-spacing:-.01em;margin:0 0 8px;line-height:1.05}
+header p{color:var(--dim);margin:0 0 26px;font-size:15px;max-width:56ch}
+.accent{color:var(--gold);font-style:italic}
+.bar{
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:var(--r);padding:12px;backdrop-filter:blur(16px);
+  box-shadow:0 20px 50px -30px rgba(0,0,0,.9);
+  position:sticky;top:16px;z-index:20;
+}
+.bar input{
+  font:inherit;color:var(--fg);background:rgba(0,0,0,.35);border:1px solid var(--border);
+  border-radius:12px;padding:12px 14px;outline:none;min-height:44px;
+}
+#ticker{flex:1;min-width:150px;text-transform:uppercase;font-weight:600;letter-spacing:.06em}
+.opt{width:96px}
+.bar input::placeholder{color:#6B6459}
+.bar input:focus{border-color:var(--border-lit);box-shadow:0 0 0 3px rgba(201,168,106,.16)}
+button{
+  font:inherit;font-weight:600;cursor:pointer;min-height:44px;padding:12px 24px;
+  border:1px solid var(--gold);border-radius:12px;color:#1A1509;letter-spacing:.01em;
+  background:linear-gradient(180deg,var(--champagne),var(--gold));
+  transition:transform .18s var(--ease),filter .2s,box-shadow .2s;
+  box-shadow:0 8px 24px -10px rgba(201,168,106,.5);
+}
+button:hover{filter:brightness(1.06);box-shadow:0 10px 30px -10px rgba(201,168,106,.65)}
+button:active{transform:scale(.97)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.hint{color:var(--dim);font-size:12.5px;margin:10px 2px 0}
+/* bento value board */
+.board{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0 4px}
+.chip{
+  display:flex;flex-direction:column;gap:3px;padding:10px 14px;border-radius:14px;
+  background:var(--panel);border:1px solid var(--border);min-width:96px;opacity:.38;
+  backdrop-filter:blur(8px);
+  transition:opacity .5s,border-color .5s,background .5s,transform .4s,box-shadow .5s;
+}
+.chip.on{opacity:1;border-color:var(--border-lit);background:rgba(201,168,106,.07);
+  box-shadow:0 0 0 1px rgba(201,168,106,.12),0 8px 30px -18px rgba(201,168,106,.6);animation:pop .5s var(--ease)}
+.chip small{color:var(--bronze);font-size:11px;font-weight:500;letter-spacing:.03em}
+.chip b{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--champagne)}
+#steps{display:flex;flex-direction:column;gap:16px;margin-top:24px}
+.card{
+  background:var(--panel);border:1px solid var(--border);border-radius:var(--r);
+  padding:26px;opacity:1;backdrop-filter:blur(14px);
+  box-shadow:0 30px 60px -40px rgba(0,0,0,.9);
+}
+.card.in{animation:rise .6s var(--ease)}
+/* neural-connection: bronze rail + node linking sub-calc back to the chain */
+.card.sub{position:relative;margin-left:clamp(0px,4vw,38px);border-left:1px solid var(--bronze)}
+.card.sub::before{content:"";position:absolute;left:-5px;top:26px;width:9px;height:9px;border-radius:50%;
+  background:var(--gold);box-shadow:0 0 0 4px rgba(201,168,106,.14)}
+.card .kicker{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--bronze);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card.sub .kicker{color:var(--gold)}
+.card h3{font-family:var(--serif);margin:0 0 16px;font-size:22px;font-weight:600;letter-spacing:-.01em}
+.fx{background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:14px;padding:18px;overflow-x:auto;text-align:center;font-size:1.18em;color:var(--fg)}
+.fx.num{border-color:var(--border-lit);background:rgba(201,168,106,.05)}
+.fx .katex{color:var(--champagne)}
+.legend{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:9px}
+.legend li{display:flex;gap:12px;align-items:baseline;font-size:14.5px}
+.legend .sym{flex:0 0 auto;min-width:80px;color:var(--gold);font-weight:600;font-family:var(--serif);font-style:italic}
+.legend .desc{color:#DDD4C6}
+.legend .desc em{color:var(--dim);font-style:normal}
+.legend .val{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums;color:var(--champagne);white-space:nowrap}
+.callout{margin-top:16px;padding:13px 15px;border-radius:12px;background:rgba(167,139,113,.1);border:1px solid rgba(167,139,113,.3);font-size:14px;display:flex;gap:11px;align-items:center;color:#E3D9C9}
+.callout.back{background:rgba(201,168,106,.1);border-color:var(--border-lit)}
+.callout.warn{background:rgba(190,120,60,.12);border-color:rgba(190,120,60,.4);color:#E8C9A0}
+.callout b{color:var(--champagne)}
+.result{text-align:center;padding:36px 24px;border-color:var(--border-lit);background:
+  radial-gradient(120% 150% at 50% 0%, rgba(201,168,106,.2), transparent 68%),var(--panel)}
+.result .big{font-family:var(--serif);font-size:clamp(48px,12vw,84px);font-weight:700;letter-spacing:-.02em;line-height:1;
+  background:linear-gradient(180deg,#FBF4E6,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;font-variant-numeric:tabular-nums;animation:pop .8s var(--ease)}
+.result .lbl{color:var(--bronze);font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px}
+.result .interp{color:#DDD4C6;font-size:14.5px;margin-top:16px;max-width:52ch;margin-inline:auto}
+.err{color:#E8B4A0;background:rgba(150,60,40,.14);border:1px solid rgba(150,60,40,.45);border-radius:14px;padding:15px 16px}
+svg.ic{width:15px;height:15px;flex:0 0 auto;vertical-align:middle}
+@keyframes rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@keyframes pop{from{transform:scale(.82)}to{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>CAPM <span class="accent">Explainer</span></h1>
+    <p>Escribe el ticker de una empresa y te enseño, paso a paso, cómo se calcula su retorno esperado.</p>
+  </header>
+
+  <div class="bar">
+    <input id="ticker" placeholder="KO, ITX.MC, SHEL.L…" autocomplete="off" spellcheck="false">
+    <input id="rf" class="opt" placeholder="Rf %" title="Opcional: risk-free en % (ej. 4.5)">
+    <input id="g" class="opt" placeholder="g %" title="Opcional: crecimiento nominal en % (ej. 3)">
+    <button id="go">Calcular</button>
+  </div>
+  <p class="hint">Rf y g son opcionales. USD usa el bono USA a 10 años en vivo; EUR/GBP usan un valor por defecto que puedes sobrescribir aquí.</p>
+
+  <div class="board" id="board"></div>
+  <div id="steps"></div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const steps=$("#steps"), board=$("#board");
+const pct=x=>(x*100).toFixed(2)+"%";
+const tex=x=>(x*100).toFixed(2)+"\\%";  // % es comentario en LaTeX -> escapar
+const reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
+const wait=ms=>new Promise(r=>setTimeout(r,reduce?0:ms));
+const K=(el,tex)=>{try{katex.render(tex,el,{throwOnError:false,displayMode:true});}catch(e){el.textContent=tex;}};
+const IC={
+  chain:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>',
+  back:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a4 4 0 0 1 0 8h-1"/></svg>',
+  warn:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>'
+};
+
+function chip(key,label,val){
+  let c=document.getElementById("chip-"+key);
+  if(!c){c=document.createElement("div");c.className="chip";c.id="chip-"+key;
+    c.innerHTML="<small></small><b></b>";board.appendChild(c);}
+  c.querySelector("small").textContent=label;
+  c.querySelector("b").textContent=val;
+  c.classList.remove("on");void c.offsetWidth;c.classList.add("on");
+}
+function card(cls=""){
+  const c=document.createElement("div");c.className="card in "+cls;
+  steps.appendChild(c);
+  requestAnimationFrame(()=>c.scrollIntoView({behavior:"smooth",block:"nearest"}));
+  return c;
+}
+
+async function run(d){
+  steps.innerHTML="";board.innerHTML="";
+  const b=d.beta.toFixed(3);
+
+  const h=card();h.innerHTML=`<div class="kicker">Empresa</div>
+    <h3>${d.name} · <span class="accent">${d.ticker}</span> <span style="color:var(--dim);font-weight:500">(${d.ccy})</span></h3>
+    <div style="color:var(--dim);font-size:14px">Mercado de referencia: ${d.index} · ETF de dividendos: ${d.etf}</div>`;
+  await wait(1100);
+
+  const f=card();f.innerHTML=`<div class="kicker">Paso 1 · La fórmula</div>
+    <h3>Retorno esperado — modelo CAPM</h3><div class="fx" id="fx-main"></div>
+    <ul class="legend">
+      <li><span class="sym">E[Rᵢ]</span><span class="desc">Retorno esperado del activo <em>— lo que queremos hallar</em></span></li>
+      <li><span class="sym">R_f</span><span class="desc">Tasa libre de riesgo <em>— bono soberano</em></span></li>
+      <li><span class="sym">βᵢ</span><span class="desc">Beta <em>— cuánto se mueve la acción respecto al mercado</em></span></li>
+      <li><span class="sym">E[Rₘ]</span><span class="desc">Retorno esperado del mercado</span></li>
+      <li><span class="sym">(E[Rₘ]−R_f)</span><span class="desc">Prima de riesgo de mercado <em>(MRP)</em></span></li>
+    </ul>`;
+  K(f.querySelector("#fx-main"),"E[R_i] = R_f + \\beta_i\\,\\bigl(E[R_m] - R_f\\bigr)");
+  await wait(1600);
+
+  const cRf=card();cRf.innerHTML=`<div class="kicker">Paso 2 · Componentes</div>
+    <h3>Tasa libre de riesgo · R_f</h3>
+    <ul class="legend"><li><span class="sym">R_f</span>
+      <span class="desc">Bono soberano a 10 años (${d.ccy})</span>
+      <span class="val">${pct(d.rf)}</span></li></ul>`;
+  chip("rf","R_f",pct(d.rf));await wait(1300);
+
+  const cB=card();cB.innerHTML=`<div class="kicker">Paso 2 · Componentes</div>
+    <h3>Beta · βᵢ</h3><div class="fx" id="fx-beta"></div>
+    <ul class="legend"><li><span class="sym">βᵢ</span>
+      <span class="desc">Regresión de retornos mensuales vs ${d.index} <em>· ${d.months} meses</em></span>
+      <span class="val">${b}</span></li></ul>`;
+  K(cB.querySelector("#fx-beta"),"\\beta_i = \\dfrac{\\mathrm{Cov}(R_i,\\,R_m)}{\\mathrm{Var}(R_m)}");
+  chip("beta","βᵢ",b);await wait(1500);
+
+  if(d.warn){const w=card();w.innerHTML=`<div class="callout warn">${IC.warn} <span>${d.warn}</span></div>`;await wait(1300);}
+
+  const chain=card();chain.innerHTML=`<div class="callout"><span>${IC.chain}</span>
+    <span><b>E[Rₘ]</b> no es un dato directo: necesita su propia fórmula. Encadenamos al modelo de Gordon…</span></div>`;
+  await wait(1200);
+
+  const g=card("sub");g.innerHTML=`<div class="kicker">${IC.chain} Sub-cálculo · E[Rₘ]</div>
+    <h3>Retorno esperado del mercado — modelo de Gordon</h3>
+    <div class="fx" id="fx-g"></div>
+    <ul class="legend">
+      <li><span class="sym">D/P</span><span class="desc">Dividend yield del mercado <em>(ETF ${d.etf})</em></span><span class="val">${pct(d.dy)}</span></li>
+      <li><span class="sym">g</span><span class="desc">Crecimiento nominal esperado <em>(perilla)</em></span><span class="val">${pct(d.g)}</span></li>
+    </ul>`;
+  K(g.querySelector("#fx-g"),"E[R_m] = \\dfrac{D}{P}\\,(1+g) + g");
+  chip("dy","D/P",pct(d.dy));chip("g","g",pct(d.g));await wait(1600);
+
+  const gn=card("sub");gn.innerHTML=`<div class="fx num" id="fx-gn"></div>
+    <div class="callout back"><span>${IC.back}</span>
+      <span>Llevamos <b>E[Rₘ] = ${pct(d.rm)}</b> de vuelta a la fórmula principal.</span></div>`;
+  K(gn.querySelector("#fx-gn"),
+    `E[R_m] = ${d.dy.toFixed(4)}\\,(1+${d.g}) + ${d.g} = \\mathbf{${tex(d.rm)}}`);
+  chip("rm","E[Rₘ]",pct(d.rm));await wait(1600);
+
+  const sub=card();sub.innerHTML=`<div class="kicker">Paso 3 · Sustitución</div>
+    <h3>Metemos cada valor en la fórmula</h3>
+    <div class="fx num" id="fx-s1"></div><div style="height:10px"></div>
+    <div class="fx num" id="fx-s2"></div>`;
+  K(sub.querySelector("#fx-s1"),
+    `E[R] = ${tex(d.rf)} + ${b}\\,\\bigl(\\underbrace{${tex(d.rm)} - ${tex(d.rf)}}_{\\text{MRP}\\,=\\,${tex(d.mrp)}}\\bigr)`);
+  K(sub.querySelector("#fx-s2"),`E[R] = ${tex(d.rf)} + ${b}\\times ${tex(d.mrp)} = \\mathbf{${tex(d.er)}}`);
+  chip("mrp","MRP",pct(d.mrp));await wait(1700);
+
+  const r=card("result");r.innerHTML=`<div class="lbl">Retorno esperado (CAPM) · ${d.ticker}</div>
+    <div class="big">${pct(d.er)}</div>
+    <div class="interp">Según CAPM, un inversor debería exigir en torno a <b>${pct(d.er)}</b> anual
+    por tener ${d.name}, dado su riesgo (β=${b}) frente al mercado. ${d.er<d.rf?
+      "Ojo: sale por debajo del activo sin riesgo — beta muy baja y prima de mercado ajustada.":""}</div>`;
+  chip("er","E[R]",pct(d.er));
+}
+
+async function go(){
+  const t=$("#ticker").value.trim().toUpperCase();
+  if(!t)return $("#ticker").focus();
+  const btn=$("#go");btn.disabled=true;btn.textContent="Buscando…";
+  steps.innerHTML="";board.innerHTML="";
+  const q=new URLSearchParams({ticker:t});
+  const rf=parseFloat($("#rf").value),g=parseFloat($("#g").value);
+  if(!isNaN(rf))q.set("rf",rf/100);
+  if(!isNaN(g))q.set("g",g/100);
+  try{
+    const res=await fetch("/api/capm?"+q);const d=await res.json();
+    if(d.error)throw new Error(d.error);
+    await run(d);
+  }catch(e){
+    const el=card("err");el.innerHTML=`No se pudo calcular <b>${t}</b>: ${e.message}`;
+  }finally{btn.disabled=false;btn.textContent="Calcular";}
+}
+$("#go").addEventListener("click",go);
+$("#ticker").addEventListener("keydown",e=>{if(e.key==="Enter")go();});
+addEventListener("load",()=>$("#ticker").focus());
+</script>
+</body>
+</html>

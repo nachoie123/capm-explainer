@@ -1,0 +1,7 @@
+# solo publicamos la app CAPM
+__pycache__/
+*.pyc
+.claude/
+.agents/
+skills-lock.json
+.DS_Store
