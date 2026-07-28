@@ -5,3 +5,6 @@ __pycache__/
 .agents/
 skills-lock.json
 .DS_Store
+
+# otro proyecto en esta carpeta
+flight-deals/
