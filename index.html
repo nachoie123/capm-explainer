@@ -44,7 +44,7 @@ header p{color:var(--dim);margin:0 0 26px;font-size:15px;max-width:56ch}
   font:inherit;color:var(--fg);background:rgba(0,0,0,.35);border:1px solid var(--border);
   border-radius:12px;padding:12px 14px;outline:none;min-height:44px;
 }
-#ticker{flex:1;min-width:150px;text-transform:uppercase;font-weight:600;letter-spacing:.06em}
+#ticker{flex:1;min-width:150px;font-weight:600;letter-spacing:.02em}
 .opt{width:96px}
 .bar input::placeholder{color:#6B6459}
 .bar input:focus{border-color:var(--border-lit);box-shadow:0 0 0 3px rgba(201,168,106,.16)}
@@ -115,11 +115,11 @@ svg.ic{width:15px;height:15px;flex:0 0 auto;vertical-align:middle}
 <div class="wrap">
   <header>
     <h1>CAPM <span class="accent">Explainer</span></h1>
-    <p>Escribe el ticker de una empresa y te enseño, paso a paso, cómo se calcula su retorno esperado.</p>
+    <p>Escribe el <b>nombre</b> o el ticker de una empresa y te enseño, paso a paso, cómo se calcula su retorno esperado.</p>
   </header>
 
   <div class="bar">
-    <input id="ticker" placeholder="KO, ITX.MC, SHEL.L…" autocomplete="off" spellcheck="false">
+    <input id="ticker" placeholder="Repsol, Apple, KO, Santander…" autocomplete="off" spellcheck="false">
     <input id="rf" class="opt" placeholder="Rf %" title="Opcional: risk-free en % (ej. 4.5)">
     <input id="g" class="opt" placeholder="g %" title="Opcional: crecimiento nominal en % (ej. 3)">
     <button id="go">Calcular</button>
@@ -135,9 +135,10 @@ const $=s=>document.querySelector(s);
 const steps=$("#steps"), board=$("#board");
 const pct=x=>(x*100).toFixed(2)+"%";
 const tex=x=>(x*100).toFixed(2)+"\\%";  // % es comentario en LaTeX -> escapar
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));  // evita XSS al usar innerHTML
 const reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
 const wait=ms=>new Promise(r=>setTimeout(r,reduce?0:ms));
-const K=(el,tex)=>{try{katex.render(tex,el,{throwOnError:false,displayMode:true});}catch(e){el.textContent=tex;}};
+const K=(el,src)=>{try{katex.render(src,el,{throwOnError:false,displayMode:true});}catch(e){el.textContent=src;}};
 const IC={
   chain:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>',
   back:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a4 4 0 0 1 0 8h-1"/></svg>',
@@ -164,8 +165,9 @@ async function run(d){
   const b=d.beta.toFixed(3);
 
   const h=card();h.innerHTML=`<div class="kicker">Empresa</div>
-    <h3>${d.name} · <span class="accent">${d.ticker}</span> <span style="color:var(--dim);font-weight:500">(${d.ccy})</span></h3>
-    <div style="color:var(--dim);font-size:14px">Mercado de referencia: ${d.index} · ETF de dividendos: ${d.etf}</div>`;
+    <h3>${esc(d.name)} · <span class="accent">${esc(d.ticker)}</span> <span style="color:var(--dim);font-weight:500">(${esc(d.ccy)})</span></h3>
+    ${d.resolved_from?`<div style="color:var(--gold);font-size:13px;margin:-4px 0 8px">Buscaste “${esc(d.resolved_from)}” → ${esc(d.ticker)}</div>`:""}
+    <div style="color:var(--dim);font-size:14px">Mercado de referencia: ${esc(d.index)} · ETF de dividendos: ${esc(d.etf)}</div>`;
   await wait(1100);
 
   const f=card();f.innerHTML=`<div class="kicker">Paso 1 · La fórmula</div>
@@ -190,12 +192,12 @@ async function run(d){
   const cB=card();cB.innerHTML=`<div class="kicker">Paso 2 · Componentes</div>
     <h3>Beta · βᵢ</h3><div class="fx" id="fx-beta"></div>
     <ul class="legend"><li><span class="sym">βᵢ</span>
-      <span class="desc">Regresión de retornos mensuales vs ${d.index} <em>· ${d.months} meses</em></span>
+      <span class="desc">Regresión de retornos mensuales vs ${esc(d.index)} <em>· ${d.months} meses · R²=${(d.r2*100).toFixed(0)}%</em></span>
       <span class="val">${b}</span></li></ul>`;
   K(cB.querySelector("#fx-beta"),"\\beta_i = \\dfrac{\\mathrm{Cov}(R_i,\\,R_m)}{\\mathrm{Var}(R_m)}");
   chip("beta","βᵢ",b);await wait(1500);
 
-  if(d.warn){const w=card();w.innerHTML=`<div class="callout warn">${IC.warn} <span>${d.warn}</span></div>`;await wait(1300);}
+  if(d.warn){const w=card();w.innerHTML=`<div class="callout warn">${IC.warn} <span>${esc(d.warn)}</span></div>`;await wait(1300);}
 
   const chain=card();chain.innerHTML=`<div class="callout"><span>${IC.chain}</span>
     <span><b>E[Rₘ]</b> no es un dato directo: necesita su propia fórmula. Encadenamos al modelo de Gordon…</span></div>`;
@@ -205,7 +207,7 @@ async function run(d){
     <h3>Retorno esperado del mercado — modelo de Gordon</h3>
     <div class="fx" id="fx-g"></div>
     <ul class="legend">
-      <li><span class="sym">D/P</span><span class="desc">Dividend yield del mercado <em>(ETF ${d.etf})</em></span><span class="val">${pct(d.dy)}</span></li>
+      <li><span class="sym">D/P</span><span class="desc">Dividend yield del mercado <em>(ETF ${esc(d.etf)})</em></span><span class="val">${pct(d.dy)}</span></li>
       <li><span class="sym">g</span><span class="desc">Crecimiento nominal esperado <em>(perilla)</em></span><span class="val">${pct(d.g)}</span></li>
     </ul>`;
   K(g.querySelector("#fx-g"),"E[R_m] = \\dfrac{D}{P}\\,(1+g) + g");
@@ -227,16 +229,16 @@ async function run(d){
   K(sub.querySelector("#fx-s2"),`E[R] = ${tex(d.rf)} + ${b}\\times ${tex(d.mrp)} = \\mathbf{${tex(d.er)}}`);
   chip("mrp","MRP",pct(d.mrp));await wait(1700);
 
-  const r=card("result");r.innerHTML=`<div class="lbl">Retorno esperado (CAPM) · ${d.ticker}</div>
+  const r=card("result");r.innerHTML=`<div class="lbl">Retorno esperado (CAPM) · ${esc(d.ticker)}</div>
     <div class="big">${pct(d.er)}</div>
     <div class="interp">Según CAPM, un inversor debería exigir en torno a <b>${pct(d.er)}</b> anual
-    por tener ${d.name}, dado su riesgo (β=${b}) frente al mercado. ${d.er<d.rf?
+    por tener ${esc(d.name)}, dado su riesgo (β=${b}) frente al mercado. ${d.er<d.rf?
       "Ojo: sale por debajo del activo sin riesgo — beta muy baja y prima de mercado ajustada.":""}</div>`;
   chip("er","E[R]",pct(d.er));
 }
 
 async function go(){
-  const t=$("#ticker").value.trim().toUpperCase();
+  const t=$("#ticker").value.trim();
   if(!t)return $("#ticker").focus();
   const btn=$("#go");btn.disabled=true;btn.textContent="Buscando…";
   steps.innerHTML="";board.innerHTML="";
@@ -249,7 +251,7 @@ async function go(){
     if(d.error)throw new Error(d.error);
     await run(d);
   }catch(e){
-    const el=card("err");el.innerHTML=`No se pudo calcular <b>${t}</b>: ${e.message}`;
+    const el=card("err");el.innerHTML=`No se pudo calcular <b>${esc(t)}</b>: ${esc(e.message)}`;
   }finally{btn.disabled=false;btn.textContent="Calcular";}
 }
 $("#go").addEventListener("click",go);

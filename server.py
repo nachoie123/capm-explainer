@@ -30,11 +30,11 @@ class H(BaseHTTPRequestHandler):
             return
         if u.path == "/api/capm":
             q = parse_qs(u.query)
-            ticker = (q.get("ticker", [""])[0]).strip().upper()
-            rf = float(q["rf"][0]) if q.get("rf") else None
-            g = float(q["g"][0]) if q.get("g") else None
+            query = q.get("ticker", [""])[0].strip()
             try:
-                data = capm.capm(ticker, rf, g)
+                rf = float(q["rf"][0]) if q.get("rf") else None
+                g = float(q["g"][0]) if q.get("g") else None
+                data = capm.analyze(query, rf, g)
                 self._send(200, json.dumps(data).encode())
             except Exception as e:
                 self._send(400, json.dumps({"error": str(e)}).encode())
@@ -46,5 +46,9 @@ class H(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    print("CAPM Explainer -> http://localhost:8000  (Ctrl+C para parar)")
-    ThreadingHTTPServer(("127.0.0.1", 8000), H).serve_forever()
+    # En un host (Render, HF Spaces, etc.) llega $PORT y hay que escuchar en 0.0.0.0.
+    # En local, solo 127.0.0.1 (no exponer la máquina a la red).
+    port = int(os.environ.get("PORT", 8000))
+    host = "0.0.0.0" if os.environ.get("PORT") else "127.0.0.1"
+    print(f"CAPM Explainer -> http://localhost:{port}  (Ctrl+C para parar)")
+    ThreadingHTTPServer((host, port), H).serve_forever()
