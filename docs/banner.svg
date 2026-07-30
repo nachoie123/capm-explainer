@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" font-family="Georgia, 'Times New Roman', serif">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FBF4E6"/>
+      <stop offset="1" stop-color="#C9A86A"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="18%" cy="0%" r="80%">
+      <stop offset="0" stop-color="#C9A86A" stop-opacity="0.20"/>
+      <stop offset="0.6" stop-color="#C9A86A" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="95%" cy="0%" r="70%">
+      <stop offset="0" stop-color="#A78B71" stop-opacity="0.16"/>
+      <stop offset="0.6" stop-color="#A78B71" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="420" fill="#0A0908"/>
+  <rect width="1200" height="420" fill="url(#glow)"/>
+  <rect width="1200" height="420" fill="url(#glow2)"/>
+
+  <text x="80" y="150" font-size="72" font-weight="700" fill="#F2ECE1">CAPM
+    <tspan fill="url(#gold)" font-style="italic"> Explainer</tspan>
+  </text>
+
+  <text x="82" y="196" font-family="Inter, Segoe UI, sans-serif" font-size="22" fill="#8F877A">
+    El retorno esperado de una acci&#243;n, calculado paso a paso desde datos en vivo de Yahoo Finance.
+  </text>
+
+  <g transform="translate(80, 250)">
+    <rect x="0" y="0" width="1040" height="96" rx="16" fill="rgba(201,168,106,0.05)" stroke="#C9A86A" stroke-opacity="0.4"/>
+    <text x="520" y="62" text-anchor="middle" font-size="40" fill="url(#gold)">
+      E[R]  =  R&#8202;&#402;  +  &#946; &#183; ( E[R&#8344;] &#8722; R&#8202;&#402; )
+    </text>
+  </g>
+
+  <text x="82" y="392" font-family="Inter, Segoe UI, sans-serif" font-size="15" fill="#6B6459" letter-spacing="2">
+    CAPM &#183; BETA POR REGRESI&#211;N &#183; E[R&#8344;] FORWARD (GORDON) &#183; USD / EUR / GBP
+  </text>
+</svg>
