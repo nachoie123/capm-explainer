@@ -34,6 +34,12 @@ construir() {  # $1 = arm64 | x86_64   $2 = venv   $3 = carpeta en dist/ (AppleS
     "CAPM Explainer.spec" > "build/pyinstaller-$N.log" 2>&1 || { tail -30 "build/pyinstaller-$N.log"; exit 1; }
   tail -1 "build/pyinstaller-$N.log"
   rm -rf "dist/$N/CAPM Explainer"   # la carpeta suelta de COLLECT: solo queda el .app
+  # la versión mínima de macOS que declara la app tiene que cubrir la de sus binarios (numpy pide 14)
+  local APP="dist/$N/CAPM Explainer.app"
+  local MIN=$(plutil -extract LSMinimumSystemVersion raw "$APP/Contents/Info.plist")
+  local MAX=$(find "$APP" -name '*.so' -o -name '*.dylib' | while read -r f; do otool -l "$f" | awk '/minos/{print $2}'; done | sort -V | tail -1)
+  [ "$(printf '%s\n%s\n' "$MAX" "$MIN" | sort -V | tail -1)" = "$MIN" ] || { echo "Info.plist dice macOS $MIN pero un binario pide $MAX"; exit 1; }
+  echo "$N: macOS mínimo $MIN (binarios hasta $MAX)"
 }
 construir arm64 .venv AppleSilicon
 construir x86_64 .venv-x86_64 Intel

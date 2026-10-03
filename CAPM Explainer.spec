@@ -16,4 +16,4 @@ coll = COLLECT(exe, a.binaries, a.datas, strip=False, upx=False, upx_exclude=[],
 app = BUNDLE(coll, name='CAPM Explainer.app', icon='build/icon.icns',
              bundle_identifier='com.nachosanbenito.capmexplainer',
              info_plist={'CFBundleShortVersionString': '1.0.0', 'NSHighResolutionCapable': True,
-                         'LSMinimumSystemVersion': '11.0', 'NSHumanReadableCopyright': 'CAPM Explainer'})
+                         'LSMinimumSystemVersion': '14.0', 'NSHumanReadableCopyright': 'CAPM Explainer'})
