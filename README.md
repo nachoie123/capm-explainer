@@ -18,6 +18,12 @@ Desglosa la fórmula del CAPM componente a componente, en vez de escupir un núm
 - **Buscador por nombre**: resuelve `Repsol` → `REP.MC` automáticamente vía la búsqueda de Yahoo.
 - **Mercados soportados**: EE. UU. (USD), Eurozona (EUR), Reino Unido (GBP).
 
+## App para Mac
+
+Descárgala en [Releases](https://github.com/nachoie123/capm-explainer/releases/latest): `CAPM-Explainer-AppleSilicon.dmg` (M1 y posteriores) o `CAPM-Explainer-Intel.dmg`. No está notarizada por Apple: la primera vez, *System Settings › Privacy & Security › Open Anyway*. Cada release publica su SHA-256.
+
+Para fabricarla tú: `./build.sh && tools/dmg.sh` (se niega a empaquetar si hay cambios sin commitear y pasa `tools/seguridad.py`, cuyo resultado está en [docs/seguridad.md](docs/seguridad.md)).
+
 ## Cómo ejecutarlo
 
 Requisitos: **Python 3**.

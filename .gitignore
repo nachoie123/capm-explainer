@@ -8,3 +8,8 @@ skills-lock.json
 
 # otro proyecto en esta carpeta
 flight-deals/
+
+# app de Mac (build.sh)
+.venv*/
+build/
+dist/
