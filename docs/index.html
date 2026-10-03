@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CAPM Explainer</title>
+<meta name="description" content="Type a company, watch its expected return get derived step by step: risk-free rate, beta by regression, market premium. Live Yahoo Finance data. Open source.">
+<meta property="og:title" content="CAPM Explainer: expected return, one step at a time">
+<meta property="og:description" content="Beta from a regression, risk-free rate, market premium, then the answer. Live Yahoo Finance data, animated step by step.">
+<meta property="og:image" content="https://nachosanbenito.com/capm-explainer/poster.jpg">
+<meta name="theme-color" content="#0b0907">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#F7F1E6;--surface:#FFFBF2;--text:#241B0E;--muted:#6B5D45;--border:#E6D9BD;--accent:#8A6A2C;--g:linear-gradient(100deg,#D9B86F,#A8802F);--on:#1d1406}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0907;--surface:#15110b;--text:#F3E6C8;--muted:#A29579;--border:#2e2415;--accent:#C9A86A;--g:linear-gradient(100deg,#F0D9A0,#C9A86A);--on:#1d1406}}
+  :root[data-theme="dark"]{--bg:#0b0907;--surface:#15110b;--text:#F3E6C8;--muted:#A29579;--border:#2e2415;--accent:#C9A86A;--g:linear-gradient(100deg,#F0D9A0,#C9A86A);--on:#1d1406}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 Inter,-apple-system,sans-serif}
+  .wrap{max-width:1040px;margin:0 auto;padding:40px 16px 72px}
+  .video video{width:100%;max-width:880px;display:block;margin:0 auto;border-radius:18px;background:#000;box-shadow:0 30px 80px rgb(201 168 106 / .18);border:1px solid var(--border)}
+  .intro{max-width:680px;margin:48px auto 0;text-align:center}
+  h1,h2,.num{font-family:"Playfair Display",Georgia,serif}
+  h1{font-size:clamp(42px,7vw,72px);line-height:1.02;letter-spacing:-.02em;margin:0 0 16px;font-weight:700}
+  h1 span{font-style:italic;font-weight:500;background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--muted);font-size:18px;margin:0 auto}
+  .cta{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:28px 0 10px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 24px;border-radius:999px;font-weight:600;text-decoration:none}
+  .btn.main{background:var(--g);color:var(--on)}
+  .btn.ghost{border:1px solid var(--border);color:var(--text);background:var(--surface)}
+  .small{color:var(--muted);font-size:13.5px;margin:10px 0 0}
+  h2{font-size:30px;letter-spacing:-.01em;margin:72px 0 20px;font-weight:600}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .grid b{display:block;margin-bottom:6px}
+  .grid p{margin:0;color:var(--muted);font-size:15px}
+  .formula{text-align:center;font-family:"Playfair Display",Georgia,serif;font-size:clamp(20px,4.6vw,32px);font-style:italic;padding:26px 12px}
+  .formula b{color:var(--accent)}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+  @media (max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{text-align:center;padding:18px 8px}
+  .stat small{display:block;color:var(--muted);letter-spacing:.12em;font-size:12px}
+  .stat .num{font-size:34px;font-weight:700;color:var(--accent)}
+  .stat.hot{border-color:var(--accent)}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:15px}
+  th,td{text-align:right;padding:10px 6px;border-top:1px solid var(--border)}
+  th:first-child,td:first-child{text-align:left}
+  thead th{border-top:0;color:var(--muted);font-weight:500;font-size:13px}
+  .scroll{overflow-x:auto}
+  pre{margin:0;overflow-x:auto;font:14px/1.6 ui-monospace,Menlo,monospace}
+  footer{margin-top:64px;color:var(--muted);font-size:14px;text-align:center}
+  footer a{color:inherit}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="video"><video src="capm-explainer.mp4" poster="poster.jpg" controls playsinline preload="metadata"></video></div>
+
+  <section class="intro">
+    <h1>CAPM <span>Explainer</span></h1>
+    <p class="lead">Type a company name or ticker and watch its expected return get derived, one animated step at a time: where the risk-free rate comes from, how beta is measured, what the market premium is. Not a number, a derivation.</p>
+    <div class="cta">
+      <a class="btn main" href="https://github.com/nachoie123/capm-explainer">View on GitHub</a>
+      <a class="btn ghost" href="#run">Run it locally</a>
+    </div>
+    <p class="small">Python + vanilla JS · live Yahoo Finance data · MIT · the interface is in Spanish · educational, not financial advice</p>
+  </section>
+
+  <h2>One formula, taken apart</h2>
+  <div class="card formula">E[R] = R<sub>f</sub> + <b>β</b> · (E[R<sub>m</sub>] − R<sub>f</sub>)</div>
+  <p class="small">The expected return of a stock is what you earn for lending to the safe borrower (R<sub>f</sub>), plus extra for the risk you can't diversify away (β times the market premium). The app computes each piece from real data instead of asking you to type it in.</p>
+
+  <h2>A real run: Inditex (ITX.MC)</h2>
+  <div class="stats">
+    <div class="card stat"><small>R<sub>f</sub></small><div class="num">2.50%</div></div>
+    <div class="card stat"><small>β</small><div class="num">1.141</div></div>
+    <div class="card stat"><small>PREMIUM</small><div class="num">2.93%</div></div>
+    <div class="card stat hot"><small>E[R]</small><div class="num">5.84%</div></div>
+  </div>
+  <p class="small">2.50% + 1.141 × 2.93% = 5.84%. Beta comes from a regression of 59 monthly returns against the Euro Stoxx 50 (R² = 45%). The market return, 5.43%, comes from the Gordon model: dividend yield 2.36% × (1 + 3%) + 3%. Numbers are the app's real output, recorded in the video above.</p>
+
+  <h2>How each number is found</h2>
+  <div class="grid">
+    <div class="card"><b>Beta by regression</b><p>Covariance of the stock with its market index over variance of the index, on monthly returns. It shows R² so you can see how much to trust it.</p></div>
+    <div class="card"><b>Risk-free rate</b><p>US stocks use the live 10-year Treasury (^TNX). EUR and GBP use an adjustable default, because Yahoo has no European bond yields.</p></div>
+    <div class="card"><b>Forward market return</b><p>The Gordon model: dividend yield × (1 + g) + g, not a historical average. The growth g is yours to change.</p></div>
+    <div class="card"><b>Search by name</b><p>"Repsol" resolves to REP.MC through Yahoo's search. US, Eurozone and UK markets are supported.</p></div>
+    <div class="card"><b>Honest warnings</b><p>Repsol's beta comes out at 0.02 with R² of 0.02%: Yahoo's data for it is noisy. The app says so instead of showing a fake beta.</p></div>
+    <div class="card"><b>Steps, animated</b><p>The formula, each component, a sub-calculation for the market return, then the substitution. Formulas rendered with KaTeX.</p></div>
+  </div>
+
+  <h2>Same day, other tickers</h2>
+  <div class="card scroll"><table>
+    <thead><tr><th>Ticker</th><th>β</th><th>R²</th><th>R<sub>f</sub></th><th>E[R]</th></tr></thead>
+    <tbody>
+      <tr><td>ITX.MC (EUR)</td><td>1.141</td><td>45%</td><td>2.50%</td><td>5.84%</td></tr>
+      <tr><td>AAPL</td><td>1.098</td><td>48%</td><td>5.28%</td><td>4.99%</td></tr>
+      <tr><td>MSFT</td><td>1.053</td><td>38%</td><td>5.28%</td><td>5.01%</td></tr>
+      <tr><td>NVDA</td><td>2.231</td><td>51%</td><td>5.28%</td><td>4.70%</td></tr>
+      <tr><td>KO</td><td>0.284</td><td>8%</td><td>5.28%</td><td>5.20%</td></tr>
+    </tbody></table></div>
+  <p class="small">Look at the US rows: the forward market return from the Gordon model (5.02%) is currently below the 10-year yield (5.28%), so the premium is negative and a higher beta gives a lower expected return. That is the model being honest about a thin dividend yield, and it is why the app lets you change g. A known limitation, written in the README.</p>
+
+  <h2 id="run">Run it yourself</h2>
+  <div class="card"><pre>git clone https://github.com/nachoie123/capm-explainer
+cd capm-explainer
+pip install -r requirements.txt
+python server.py   # then open http://localhost:8000</pre></div>
+  <p class="small">The app needs its small Python server (it fetches Yahoo data and does the maths), so it can't run as a static page here. There's also a command line: <code>python capm.py KO</code>.</p>
+
+  <footer>Built by <a href="https://www.linkedin.com/in/nacho-san-benito/">Ignacio San Benito</a> · <a href="https://github.com/nachoie123/capm-explainer">GitHub</a></footer>
+</main>
+</body>
+</html>
