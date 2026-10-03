@@ -186,7 +186,7 @@
   </ol>
   <div class="iwhy">
     <p><b>Why the warning?</b> Notarizing an app needs a paid Apple developer account ($99 a year). This is a free side project, so it isn't notarized. The full source code is on GitHub, and you can check that your download is exactly the file I built. In Terminal:</p>
-    <pre>shasum -a 256 ~/Downloads/CAPM-Explainer-AppleSilicon.dmg</pre><p>(Apple Silicon) should print <code>eefbbd4fe92ddc7c14220d6ff6d49b4eb60f590be52f5d94a32461cc808a3579</code></p><pre>shasum -a 256 ~/Downloads/CAPM-Explainer-Intel.dmg</pre><p>(Intel) should print <code>33a44e4431e9efcf28db7ba06c581cd8b18461b8b0866e9dd1b9117cd5326c9c</code></p>
+    <pre>shasum -a 256 ~/Downloads/CAPM-Explainer-AppleSilicon.dmg</pre><p>(Apple Silicon) should print <code>6eeddb8bc0a542db4186127caedd61975e0ee458bb6b54591ac1b9b023145f1c</code></p><pre>shasum -a 256 ~/Downloads/CAPM-Explainer-Intel.dmg</pre><p>(Intel) should print <code>aef94da3e8a374c3998397a4e8fdfcad92a31ea27f70417cdcad78f5f3c2b0fb</code></p>
     <details><summary>Prefer the Terminal for step 3?</summary><pre>xattr -dr com.apple.quarantine "/Applications/CAPM Explainer.app"</pre></details>
   </div>
   </section>

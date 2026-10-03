@@ -1,6 +1,6 @@
 # Chequeo de seguridad de CAPM Explainer.app
 
-Generado por `tools/seguridad.py` el 2026-10-03 19:38. Todo lo de abajo es salida real del script, no texto escrito a mano.
+Generado por `tools/seguridad.py` el 2026-10-03 19:49. Todo lo de abajo es salida real del script, no texto escrito a mano.
 
 | App | Prueba | Resultado |
 |---|---|---|
@@ -15,7 +15,7 @@ Generado por `tools/seguridad.py` el 2026-10-03 19:38. Todo lo de abajo es salid
 
 ## Apple Silicon — `dist/AppleSilicon/CAPM Explainer.app`
 
-Ficheros revisados: 2210 (incluye cada módulo del PYZ dentro del ejecutable), 124.1 MB descomprimidos.
+Ficheros revisados: 2208 (incluye cada módulo del PYZ dentro del ejecutable), 124.1 MB descomprimidos.
 
 ### (a) Lo buscado y cuántas veces sale
 
@@ -49,12 +49,12 @@ Ficheros revisados: 2210 (incluye cada módulo del PYZ dentro del ejecutable), 1
 
 `CAPM Explainer --selftest` (código de salida 0):
 
-- Servidor en `127.0.0.1`, puerto libre 55124
+- Servidor en `127.0.0.1`, puerto libre 56365
 - `GET /` → {'status': 200, 'html': True}
 - Host falso `evil.example:80` → 403; en `/api/capm` → 403
 - Host `localhost:<puerto>` → 200
 - Red hacia Yahoo: True
-- CAPM de KO: HTTP 200 en 1.1 s — Coca-Cola Company (The): β=0.284, Rf=5.28%, E[Rm]=5.02%, E[R]=5.20% (59 meses)
+- CAPM de KO: HTTP 200 en 1.5 s — Coca-Cola Company (The): β=0.284, Rf=5.28%, E[Rm]=5.02%, E[R]=5.20% (59 meses)
 - Caché de yfinance en ~/Library/Application Support/CAPM Explainer/yfinance-cache: ['cookies.db', 'cookies.db-shm', 'cookies.db-wal', 'tkr-tz.db', 'tkr-tz.db-shm', 'tkr-tz.db-wal']
 
 ## Intel — `dist/Intel/CAPM Explainer.app`
@@ -93,10 +93,10 @@ Ficheros revisados: 2210 (incluye cada módulo del PYZ dentro del ejecutable), 1
 
 `CAPM Explainer --selftest` (código de salida 0):
 
-- Servidor en `127.0.0.1`, puerto libre 55193
+- Servidor en `127.0.0.1`, puerto libre 56385
 - `GET /` → {'status': 200, 'html': True}
 - Host falso `evil.example:80` → 403; en `/api/capm` → 403
 - Host `localhost:<puerto>` → 200
 - Red hacia Yahoo: True
-- CAPM de KO: HTTP 200 en 1.0 s — Coca-Cola Company (The): β=0.284, Rf=5.28%, E[Rm]=5.02%, E[R]=5.20% (59 meses)
+- CAPM de KO: HTTP 200 en 1.1 s — Coca-Cola Company (The): β=0.284, Rf=5.28%, E[Rm]=5.02%, E[R]=5.20% (59 meses)
 - Caché de yfinance en ~/Library/Application Support/CAPM Explainer/yfinance-cache: ['cookies.db', 'cookies.db-shm', 'cookies.db-wal', 'tkr-tz.db', 'tkr-tz.db-shm', 'tkr-tz.db-wal']
