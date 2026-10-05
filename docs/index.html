@@ -4,201 +4,598 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>CAPM Explainer</title>
-<meta name="description" content="Type a company, watch its expected return get derived step by step: risk-free rate, beta by regression, market premium. Live Yahoo Finance data. Open source.">
-<meta property="og:title" content="CAPM Explainer: expected return, one step at a time">
-<meta property="og:description" content="Beta from a regression, risk-free rate, market premium, then the answer. Live Yahoo Finance data, animated step by step.">
+<meta name="description" content="Type a company and watch its expected return get derived: beta fitted to five years of real monthly returns, the risk-free rate, the market premium. Free Mac app, open source.">
+<meta property="og:title" content="CAPM Explainer: where an expected return comes from">
+<meta property="og:description" content="Beta is the slope of a line through 59 real months. Fit it, feed it into E[R] = Rf + β(E[Rm] − Rf), and see where the answer breaks.">
 <meta property="og:image" content="https://nachosanbenito.com/capm-explainer/poster.jpg">
-<meta name="theme-color" content="#0b0907">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111316" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js')</script>
 <style>
-  :root{--bg:#F7F1E6;--surface:#FFFBF2;--text:#241B0E;--muted:#6B5D45;--border:#E6D9BD;--accent:#8A6A2C;--g:linear-gradient(100deg,#D9B86F,#A8802F);--on:#1d1406}
-  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0907;--surface:#15110b;--text:#F3E6C8;--muted:#A29579;--border:#2e2415;--accent:#C9A86A;--g:linear-gradient(100deg,#F0D9A0,#C9A86A);--on:#1d1406}}
-  :root[data-theme="dark"]{--bg:#0b0907;--surface:#15110b;--text:#F3E6C8;--muted:#A29579;--border:#2e2415;--accent:#C9A86A;--g:linear-gradient(100deg,#F0D9A0,#C9A86A);--on:#1d1406}
+  /* palette from setosa.io/ev (Explained Visually): white page, ink, one flat colour per term of the formula */
+  :root{
+    --bg:#fff;--ink:#222;--muted:#5f6368;--line:rgb(0 0 0/.1);--grid:rgb(0 0 0/.07);--card:#fff;--shadow:2px 2px 5px rgb(34 34 34/.2);
+    --dot:#34495e;--halo:rgb(0 0 0/.1);--sq:rgb(52 73 94/.06);--sqs:rgb(52 73 94/.3);
+    --rf:#b9530a;--rf-f:#e67e22;--b:#1e8449;--b-f:#2ecc71;--p:#8e44ad;--p-f:#9b59b6;--er:#c0392b;--er-f:#e74c3c;
+    --btn:#222;--on:#fff;--r:6px;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#111316;--ink:#ececec;--muted:#a3a7ad;--line:rgb(255 255 255/.12);--grid:rgb(255 255 255/.07);--card:#181b1f;--shadow:0 0 0 1px rgb(255 255 255/.08);
+    --dot:#cfd6dd;--halo:rgb(255 255 255/.14);--sq:rgb(207 214 221/.08);--sqs:rgb(207 214 221/.3);
+    --rf:#e67e22;--b:#2ecc71;--p:#c39bd3;--er:#ec7063;--btn:#ececec;--on:#111316}}
+    @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .term{background:color-mix(in srgb,var(--c) 78%,transparent);color:#111316}}
+  :root[data-theme="dark"] .term{background:color-mix(in srgb,var(--c) 78%,transparent);color:#111316}
+  :root[data-theme="dark"]{
+    --bg:#111316;--ink:#ececec;--muted:#a3a7ad;--line:rgb(255 255 255/.12);--grid:rgb(255 255 255/.07);--card:#181b1f;--shadow:0 0 0 1px rgb(255 255 255/.08);
+    --dot:#cfd6dd;--halo:rgb(255 255 255/.14);--sq:rgb(207 214 221/.08);--sqs:rgb(207 214 221/.3);
+    --rf:#e67e22;--b:#2ecc71;--p:#c39bd3;--er:#ec7063;--btn:#ececec;--on:#111316}
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 Inter,-apple-system,sans-serif}
-  .wrap{max-width:1040px;margin:0 auto;padding:40px 16px 72px}
-  .video video{width:100%;max-width:880px;display:block;margin:0 auto;border-radius:18px;background:#000;box-shadow:0 30px 80px rgb(201 168 106 / .18);border:1px solid var(--border)}
-  .intro{max-width:680px;margin:48px auto 0;text-align:center}
-  h1,h2,.num{font-family:"Playfair Display",Georgia,serif}
-  h1{font-size:clamp(42px,7vw,72px);line-height:1.02;letter-spacing:-.02em;margin:0 0 16px;font-weight:700}
-  h1 span{font-style:italic;font-weight:500;background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .lead{color:var(--muted);font-size:18px;margin:0 auto}
-  .cta{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:28px 0 10px}
-  .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 24px;border-radius:999px;font-weight:600;text-decoration:none}
-  .btn.main{background:var(--g);color:var(--on)}
-  .btn.ghost{border:1px solid var(--border);color:var(--text);background:var(--surface)}
-  .small{color:var(--muted);font-size:13.5px;margin:10px 0 0}
-  h2{font-size:30px;letter-spacing:-.01em;margin:72px 0 20px;font-weight:600}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px}
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-  .grid b{display:block;margin-bottom:6px}
-  .grid p{margin:0;color:var(--muted);font-size:15px}
-  .formula{text-align:center;font-family:"Playfair Display",Georgia,serif;font-size:clamp(20px,4.6vw,32px);font-style:italic;padding:26px 12px}
-  .formula b{color:var(--accent)}
-  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
-  @media (max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
-  .stat{text-align:center;padding:18px 8px}
-  .stat small{display:block;color:var(--muted);letter-spacing:.12em;font-size:12px}
-  .stat .num{font-size:34px;font-weight:700;color:var(--accent)}
-  .stat.hot{border-color:var(--accent)}
-  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:15px}
-  th,td{text-align:right;padding:10px 6px;border-top:1px solid var(--border)}
-  th:first-child,td:first-child{text-align:left}
-  thead th{border-top:0;color:var(--muted);font-weight:500;font-size:13px}
-  .scroll{overflow-x:auto}
-  pre{margin:0;overflow-x:auto;font:14px/1.6 ui-monospace,Menlo,monospace}
-  footer{margin-top:64px;color:var(--muted);font-size:14px;text-align:center}
-  footer a{color:inherit}
-
-  /* design pass (ui-ux-pro-max + apple-design): wayfinding bar, press feedback, wrapping */
-  html{scroll-padding-top:84px}
+  html{scroll-padding-top:72px;-webkit-text-size-adjust:100%}
   @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
-  .top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px max(16px,calc((100% - 1008px)/2));background:color-mix(in srgb,var(--bg) 74%,transparent);-webkit-backdrop-filter:blur(18px) saturate(180%);backdrop-filter:blur(18px) saturate(180%);border-bottom:1px solid var(--border)}
-  @supports (animation-timeline:scroll()){.top{border-bottom-color:transparent;animation:edge linear both;animation-timeline:scroll();animation-range:0 48px}}
-  @keyframes edge{to{border-bottom-color:var(--border)}}
-  @media (prefers-reduced-transparency:reduce){.top{background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none}}
-  .top a{min-height:44px;display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:15px;font-weight:500;text-decoration:none;transition:color .2s}
-  .top a:hover{color:var(--text)}
-  .top .btn{padding:0 18px;font-size:15px}
-  .btn{transition:transform .12s ease-out,filter .2s,border-color .2s;-webkit-tap-highlight-color:transparent}
-  .btn:hover{filter:brightness(1.07)}
-  .btn:not(.main):hover{border-color:var(--accent)}
-  .btn:active{transform:scale(.97);transition-duration:.06s}
-  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:8px}
-  h1,h2{text-wrap:balance}
-  p,li,figcaption{text-wrap:pretty}
-  .grid.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))}
-  .stats4{grid-template-columns:repeat(4,1fr)}
-  @media (max-width:640px){.stats4{grid-template-columns:repeat(2,1fr)}}
+  body{margin:0;background:var(--bg);color:var(--ink);font:300 18px/1.55 Lato,-apple-system,"Helvetica Neue",sans-serif;-webkit-font-smoothing:antialiased;overflow-x:clip}
+  b,strong{font-weight:700}
+  a{color:var(--er)}
+  a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--er-f);outline-offset:3px;border-radius:4px}
+  h1,h2,h3{font-weight:400;margin:0;text-wrap:balance;letter-spacing:-.01em}
+  p,li,dd,figcaption{text-wrap:pretty}
+  .num,.tab{font-variant-numeric:tabular-nums lining-nums}
+  .t-rf{color:var(--rf)}.t-b{color:var(--b)}.t-p{color:var(--p)}.t-er{color:var(--er)}
+  .t-rf,.t-b,.t-p,.t-er{font-weight:700}
+  sub{font-size:.7em;line-height:0}
 
-  /* install on your Mac: same block on every landing that ships a .dmg */
-  .install{--ia:var(--accent);--ib:var(--border);--is:var(--surface);--it:var(--text);--im:var(--muted);--io:#1d1406;--mac:#0a84ff}
-  .install .isub{color:var(--im);margin:-8px 0 20px;max-width:62ch}
-  .isteps{list-style:none;padding:0;margin:0;display:grid;gap:14px;counter-reset:is}
-  .isteps>li{counter-increment:is;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start;background:var(--is);border:1px solid var(--ib);border-radius:18px;padding:20px 20px 20px 66px;position:relative}
-  .isteps>li::before{content:counter(is);position:absolute;left:20px;top:20px;width:30px;height:30px;border-radius:50%;background:var(--ia);color:var(--io);font-weight:700;font-size:15px;display:grid;place-items:center}
-  .isteps b.t{display:block;font-size:17px;margin-bottom:6px;color:var(--it)}
-  .isteps p{margin:0;color:var(--im);font-size:15px}
-  .isteps p b{color:var(--it)}
+  .top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;height:60px;padding:0 max(16px,calc((100% - 1160px)/2));background:color-mix(in srgb,var(--bg) 82%,transparent);-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);border-bottom:1px solid var(--line)}
+  @media (prefers-reduced-transparency:reduce){.top{background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none}}
+  .top .back{min-height:44px;display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:16px;font-weight:400;text-decoration:none}
+  .top .back:hover{color:var(--ink)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:var(--r);font:700 16px/1 Lato,sans-serif;text-decoration:none;white-space:nowrap;border:1px solid transparent;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s ease-out,background-color .15s,border-color .15s}
+  .btn.main{background:var(--btn);color:var(--on)}
+  .btn.main:hover{background:color-mix(in srgb,var(--btn) 86%,var(--er-f))}
+  .btn.ghost{border-color:var(--line);color:var(--ink);background:transparent}
+  .btn.ghost:hover{border-color:var(--ink)}
+  .btn:active{transform:scale(.97);transition-duration:.06s}
+  .btn svg{width:18px;height:18px;flex:none}
+
+  .wrap{max-width:1160px;margin:0 auto;padding:0 16px}
+  .col{max-width:640px}
+  section{padding:88px 0 0}
+  h2{font-size:clamp(30px,4vw,40px);line-height:1.12;margin-bottom:16px}
+  .lead{font-size:19px;color:var(--ink);margin:0 0 8px;max-width:62ch}
+  .note{color:var(--muted);font-size:15px;font-weight:400;margin:12px 0 0;max-width:68ch}
+  .note a{color:inherit}
+
+  /* hero: left the plain conclusion, right the object (the regression that fits itself) */
+  .hero{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:56px;align-items:center;padding-top:40px}
+  .hero h1{font-size:clamp(44px,5.6vw,68px);line-height:1;letter-spacing:-.02em}
+  .hero .sub{display:block;font-size:clamp(20px,2.2vw,25px);font-weight:400;color:var(--muted);margin:12px 0 22px;letter-spacing:0}
+  .hero .lead{margin-bottom:26px}
+  .cta{display:flex;gap:10px;flex-wrap:wrap}
+
+  .fig{background:var(--card);box-shadow:var(--shadow);padding:18px 18px 14px;position:relative}
+  .chart{display:block;width:100%;user-select:none;-webkit-user-select:none}
+  .chart text{font:300 12px Lato,sans-serif;fill:var(--muted)}
+  .chart .axl{font-size:13px;fill:var(--ink)}
+  .chart .grid line{stroke:var(--grid)}
+  .chart .axis line{stroke:var(--muted);stroke-width:1}
+  .chart .ref{stroke:var(--muted);stroke-dasharray:3 4;stroke-width:1;opacity:.7}
+  .chart .fit{stroke:var(--b-f);stroke-width:2.5}
+  .chart .mine{stroke:var(--p-f);stroke-width:2.5}
+  .chart .sq rect{fill:var(--sq);stroke:var(--sqs);stroke-width:.75}
+  .chart .pt{fill:var(--dot)}
+  .chart .hit{fill:var(--halo);opacity:.4;cursor:grab;touch-action:none}
+  .chart .hit:hover,.chart .hit.on{opacity:1}
+  .chart.dragging .hit{cursor:grabbing}
+  .figbar{font-weight:400;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;justify-content:space-between;font-size:14px;color:var(--muted);margin-top:4px;min-height:32px}
+  .figbar .tab{color:var(--ink)}
+  .link{background:none;border:0;padding:6px 2px;margin:0;font:400 14px Lato,sans-serif;color:var(--er);cursor:pointer;text-decoration:underline;text-underline-offset:3px;min-height:32px}
+  .link[hidden]{display:none}
+
+  /* the formula row: one circle per term, leader line and label, like setosa's coefficient circles */
+  .eq{display:grid;grid-template-columns:auto 22px auto 22px auto 22px auto;justify-content:center;align-items:center;column-gap:4px;padding:44px 0 46px;font-size:22px;color:var(--muted)}
+  .eq .op{text-align:center}
+  .term{position:relative;width:76px;height:76px;border-radius:50%;display:grid;place-items:center;font:400 18px/1 Lato,sans-serif;color:var(--ink);background:color-mix(in srgb,var(--c) 42%,transparent);font-variant-numeric:tabular-nums}
+  .term i{position:absolute;left:50%;width:176px;margin-left:-88px;font:400 12.5px/1.25 Lato,sans-serif;font-style:normal;color:var(--t);text-align:center}
+  .term i::after{content:"";position:absolute;left:50%;width:1px;height:12px;background:var(--c)}
+  .term.up i{bottom:calc(100% + 13px)}.term.up i::after{top:calc(100% + 1px)}
+  .term.dn i{top:calc(100% + 13px)}.term.dn i::after{bottom:calc(100% + 1px)}
+  .term.er{--c:var(--er-f);--t:var(--er);width:84px;height:84px;font-size:20px;font-weight:700}
+  .term.rf{--c:var(--rf-f);--t:var(--rf)}
+  .term.b{--c:var(--b-f);--t:var(--b)}
+  .term.p{--c:var(--p-f);--t:var(--p)}
+  html.js .term.wait{background:color-mix(in srgb,var(--c) 10%,transparent)}
+  html.js .term.wait>span{opacity:0}
+  @media (prefers-reduced-motion:no-preference){.term,.term>span{transition:background-color .45s cubic-bezier(.2,.8,.2,1),opacity .35s,transform .45s cubic-bezier(.3,1.6,.5,1)}.term.pop{transform:scale(1.08)}}
+
+  /* the film */
+  .film{max-width:1128px}
+  .clip{position:relative;margin:28px 0 0}
+  .clip video{display:block;width:100%;height:auto;aspect-ratio:16/9;background:#0b0907;box-shadow:var(--shadow)}
+  .play{position:absolute;inset:0;display:grid;place-items:center;padding:0;border:0;background:linear-gradient(rgb(0 0 0/0) 55%,rgb(0 0 0/.6));color:#fff;font-family:inherit;cursor:pointer}
+  .play i{display:grid;place-items:center;width:84px;height:58px;border-radius:16px;background:rgb(23 23 23/.82);box-shadow:0 0 0 1px rgb(255 255 255/.28),0 6px 24px rgb(0 0 0/.45)}
+  .play i svg{width:26px;height:26px;margin-left:2px}
+  .play span{position:absolute;left:20px;bottom:18px;font-size:16px;font-weight:400;text-shadow:0 1px 8px rgb(0 0 0/.6)}
+  .play small{position:absolute;right:16px;bottom:16px;padding:3px 7px;border-radius:6px;background:rgb(0 0 0/.78);color:#fff;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+  .play:hover i,.play:focus-visible i{background:#ff0033}
+  .play:focus-visible{outline:2px solid var(--er-f);outline-offset:4px}
+  html:not(.js) .play{display:none}
+  @media (prefers-reduced-motion:no-preference){.play i{transition:transform .25s cubic-bezier(.2,.8,.2,1),background-color .15s}.play:hover i{transform:scale(1.06)}}
+
+  /* least squares: you move the slope, the squares and the bowl answer */
+  .ls{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:18px 28px;margin-top:30px;align-items:start}
+  .ls .side{display:flex;flex-direction:column;gap:16px}
+  .ls h3{font-size:15px;font-weight:700;margin:0 0 2px}
+  .slider{display:grid;gap:6px}
+  .slider label{font-size:16px}
+  input[type=range]{width:100%;height:32px;margin:0;accent-color:var(--p-f);cursor:pointer}
+  .readout{font-weight:400;display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:16px;border-top:1px solid var(--line);padding-top:12px}
+  .readout dt{color:var(--muted)}.readout dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+  .readout .best dd{color:var(--b);font-weight:700}
+  .verdict{font-size:16px;min-height:3.1em;margin:0}
+  .cov{font-size:21px;margin:22px 0 0;line-height:1.4}
+
+  /* the other two pieces */
+  .pieces{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:48px;align-items:start;margin-top:30px}
+  .steps{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+  .steps li{padding:20px 0;border-bottom:1px solid var(--line)}
+  .steps .f{display:block;font-size:clamp(20px,2.4vw,25px);font-weight:400;line-height:1.35;margin-bottom:6px;font-variant-numeric:tabular-nums}
+  .steps p{margin:0;color:var(--muted);font-size:16.5px;font-weight:400}
+  .steps .total .f{font-size:clamp(23px,3vw,32px)}
+  .appclip{margin:0;position:sticky;top:84px}
+  .appclip video{display:block;width:100%;height:auto;aspect-ratio:640/758;background:#0b0907;box-shadow:var(--shadow)}
+  .appclip figcaption{font-size:14px;color:var(--muted);margin-top:10px}
+
+  /* where it breaks */
+  .limits{margin:30px 0 0;padding:0;border-top:1px solid var(--line)}
+  .limits>div{display:grid;grid-template-columns:240px minmax(0,1fr);gap:8px 32px;padding:22px 0;border-bottom:1px solid var(--line)}
+  .limits dt{font-size:clamp(30px,3.4vw,40px);line-height:1.05;font-weight:400;font-variant-numeric:tabular-nums}
+  .limits dt small{display:block;font-size:14px;color:var(--muted);margin-top:6px;font-weight:300}
+  .limits dd{margin:0;font-size:17px;max-width:62ch}
+  .limits dd.wide{max-width:none}.limits dd.wide>p{margin:0;max-width:62ch}
+  .sml{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;margin-top:18px;align-items:start}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:16px}
+  th,td{text-align:right;padding:9px 6px;border-top:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  thead th{border-top:0;color:var(--muted);font-weight:400;font-size:14px}
+  .tablewrap{overflow-x:auto}
+
+  /* get it */
+  .get{display:grid;grid-template-columns:minmax(0,1fr);gap:0}
+  .get .cta{margin:24px 0 10px}
+  pre,code{font:14px/1.6 ui-monospace,Menlo,monospace}
+  pre{margin:0;overflow-x:auto;padding:14px 16px;background:color-mix(in srgb,var(--ink) 5%,transparent)}
+  .install{margin-top:44px}
+  .install h3{font-size:24px;margin-bottom:6px}
+  .isub{color:var(--muted);margin:0 0 18px;font-size:16px;font-weight:400}
+  .isteps{list-style:none;padding:0;margin:0;display:grid;gap:0;counter-reset:is;border-top:1px solid var(--line)}
+  .isteps>li{counter-increment:is;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start;padding:22px 0 22px 48px;border-bottom:1px solid var(--line);position:relative}
+  .isteps>li::before{content:counter(is);position:absolute;left:0;top:20px;width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--bg);font-weight:700;font-size:15px;display:grid;place-items:center}
+  .isteps b.t{display:block;font-size:18px;margin-bottom:4px}
+  .isteps p{margin:0;color:var(--muted);font-size:16px;font-weight:400}
+  .isteps p b{color:var(--ink)}
   .isteps>li.noart{grid-template-columns:1fr}
-  @media (max-width:720px){.isteps>li{grid-template-columns:1fr;padding:18px 18px 18px 60px}.isteps>li::before{left:16px;top:18px}.iart{margin-left:-42px}}
-  /* the drawings: plain HTML, look like macOS, no screenshots */
-  .iart{font:12px/1.35 -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;color:var(--it);display:flex;justify-content:center}
-  .iwin{width:100%;max-width:300px;background:color-mix(in srgb,var(--is) 88%,var(--it) 6%);border:1px solid var(--ib);border-radius:14px;box-shadow:0 1px 2px rgb(0 0 0/.06),0 12px 30px -12px rgb(0 0 0/.25);padding:16px}
-  .iicon{width:44px;height:44px;border-radius:11px;background:var(--ia);color:#fff;font:700 20px -apple-system,sans-serif;display:grid;place-items:center;flex:none;object-fit:cover}
+  .iart{font:12px/1.35 -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;color:var(--ink);display:flex;justify-content:center}
+  .iwin{width:100%;max-width:300px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgb(0 0 0/.06),0 12px 30px -12px rgb(0 0 0/.25);padding:16px}
+  .iicon{width:44px;height:44px;border-radius:11px;flex:none;object-fit:cover}
   .idrag{display:flex;align-items:center;justify-content:space-around;gap:10px;padding:22px 16px}
-  .idrag span{display:block;text-align:center;font-size:11px;color:var(--im);margin-top:6px}
-  .idrag .arr{flex:1;height:2px;background:var(--ia);position:relative;max-width:90px}
-  .idrag .arr::after{content:"";position:absolute;right:-2px;top:-5px;border:6px solid transparent;border-left:9px solid var(--ia);border-right:0}
+  .idrag span{display:block;text-align:center;font-size:11px;color:var(--muted);margin-top:6px}
+  .idrag .arr{flex:1;height:2px;background:var(--ink);position:relative;max-width:90px}
+  .idrag .arr::after{content:"";position:absolute;right:-2px;top:-5px;border:6px solid transparent;border-left:9px solid var(--ink);border-right:0}
   .ifold{width:52px;height:40px;border-radius:5px 5px 7px 7px;background:linear-gradient(#62b5f7,#3a95e6);position:relative;margin:4px auto 0}
   .ifold::before{content:"";position:absolute;left:0;top:-6px;width:22px;height:8px;border-radius:4px 4px 0 0;background:#62b5f7}
-  .ifold::after{content:"A";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font:700 15px -apple-system,sans-serif;opacity:.85}
   .idlg{text-align:center}
-  .idlg .iicon{margin:2px auto 10px;width:40px;height:40px}
+  .idlg .iicon{margin:2px auto 10px;width:40px;height:40px;display:block}
   .idlg h4{margin:0 0 4px;font-size:13px}
-  .idlg p{margin:0 0 12px;font-size:11px;color:var(--im)}
-  .ibtn{display:block;border-radius:7px;padding:5px;font-size:12px;margin-top:6px;background:color-mix(in srgb,var(--it) 10%,transparent)}
-  .ibtn.on{background:var(--mac);color:#fff;outline:3px solid color-mix(in srgb,var(--ia) 55%,transparent);outline-offset:2px}
+  .idlg p{margin:0 0 12px;font-size:11px;color:var(--muted)}
+  .ibtn{display:block;border-radius:7px;padding:5px;font-size:12px;margin-top:6px;background:color-mix(in srgb,var(--ink) 10%,transparent)}
+  .ibtn.on{background:#0a84ff;color:#fff}
   .iset .ihead{font-weight:600;font-size:13px;margin-bottom:10px}
-  .iset .ilbl{font-size:11px;color:var(--im);text-transform:uppercase;letter-spacing:.04em;margin:0 0 6px}
-  .iset .irow{display:flex;align-items:center;gap:10px;justify-content:space-between;background:color-mix(in srgb,var(--it) 5%,transparent);border-radius:9px;padding:10px}
+  .iset .ilbl{font-size:11px;color:var(--muted);margin:0 0 6px}
+  .iset .irow{display:flex;align-items:center;gap:10px;justify-content:space-between;background:color-mix(in srgb,var(--ink) 5%,transparent);border-radius:9px;padding:10px}
   .iset .irow span{font-size:11px}
   .iset .ibtn{margin:0;padding:5px 10px;white-space:nowrap;flex:none}
-  .iwhy{margin-top:14px;background:var(--is);border:1px solid var(--ib);border-radius:18px;padding:20px}
-  .iwhy p{margin:0 0 10px;color:var(--im);font-size:15px}
-  .iwhy p b{color:var(--it)}
-  .iwhy pre{margin:8px 0;padding:12px 14px;border-radius:10px;background:color-mix(in srgb,var(--it) 6%,transparent);overflow-x:auto;font:13px/1.5 ui-monospace,Menlo,monospace;color:var(--it)}
-  .iwhy code{font:12.5px ui-monospace,Menlo,monospace;word-break:break-all;color:var(--it)}
-  .iwhy details{margin-top:6px}
-  .iwhy summary{cursor:pointer;color:var(--it);font-weight:600;font-size:15px;min-height:32px}
-  .iwhy summary:focus-visible{outline:2px solid var(--ia);outline-offset:3px;border-radius:6px}
-  .small a{color:inherit}
+  .iwhy{margin-top:22px}
+  .iwhy p{margin:0 0 10px;color:var(--muted);font-size:16px;font-weight:400}
+  .iwhy p b{color:var(--ink)}
+  .iwhy pre{margin:8px 0}
+  .iwhy code{font-size:12.5px;word-break:break-all;color:var(--ink)}
+  .iwhy summary{cursor:pointer;font-weight:700;font-size:16px;min-height:32px;padding-top:4px}
+  .src{margin-top:44px}
+
+  footer{margin:96px 0 0;padding:28px 0 40px;border-top:1px solid var(--line);font-size:15px;color:var(--muted)}
+  footer a{color:var(--ink);text-decoration:none;font-weight:400}
+  footer a:hover{text-decoration:underline}
+
+  .rv{opacity:1}
+  @media (prefers-reduced-motion:no-preference){html.js .rv{opacity:0;transform:translateY(18px);transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .7s cubic-bezier(.2,.8,.2,1)}html.js .rv.in{opacity:1;transform:none}}
+
+  @media (max-width:980px){
+    .hero{grid-template-columns:1fr;gap:28px}
+    .ls,.pieces,.sml{grid-template-columns:1fr}
+    .appclip{position:static;max-width:420px}
+  }
+  @media (max-width:640px){
+    body{font-size:17px}
+    section{padding-top:64px}
+    .hero{padding-top:24px}
+    .fig{padding:12px 10px 10px;margin:0 -6px}
+    .eq{column-gap:2px;grid-template-columns:auto 15px auto 15px auto 15px auto;font-size:17px;padding:48px 0 50px}
+    .term{width:58px;height:58px;font-size:14.5px}
+    .term.er{width:66px;height:66px;font-size:15.5px}
+    .term i{width:124px;margin-left:-62px;font-size:11.5px}
+    pre{white-space:pre-wrap;word-break:break-all}
+    .term .lg{display:none}
+    .appclip{max-width:320px}
+    .play i{width:68px;height:48px;border-radius:12px}.play i svg{width:22px;height:22px}.play span{left:14px;bottom:12px;font-size:14px}.play small{right:10px;bottom:10px}
+    .play i{position:relative;left:22%;top:32%} /* phone: the centred button would hide "Expected return" and 5.84%; empty corner under the result */
+    .limits>div{grid-template-columns:1fr}
+    .isteps>li{grid-template-columns:1fr;padding-left:44px}
+    .iart{margin-left:-44px}
+    .top .btn{padding:0 14px;font-size:15px}
+  }
 </style>
 </head>
 <body>
-<header class="top"><a href="https://nachosanbenito.com/#work"><span aria-hidden="true">←</span> nachosanbenito.com</a><a class="btn main" href="#get">Download</a></header>
-<main class="wrap">
-  <div class="video"><video src="capm-explainer.mp4" poster="poster.jpg" controls playsinline preload="metadata"></video></div>
+<header class="top">
+  <a class="back" href="https://nachosanbenito.com/#work"><span aria-hidden="true">←</span> nachosanbenito.com</a>
+  <a class="btn main" href="#get">Download for Mac</a>
+</header>
 
-  <section class="intro">
-    <h1>CAPM <span>Explainer</span></h1>
-    <p class="lead">Type a company name or ticker and watch its expected return get derived, one animated step at a time: where the risk-free rate comes from, how beta is measured, what the market premium is. Not a number, a derivation.</p>
-    <div class="cta" id="get">
-      <a class="btn main" href="https://github.com/nachoie123/capm-explainer/releases/latest/download/CAPM-Explainer-AppleSilicon.dmg">⬇ Download for Mac</a>
+<main class="wrap">
+  <section class="hero" id="top">
+    <div>
+      <h1>CAPM Explainer <span class="sub">Where an expected return comes from.</span></h1>
+      <p class="lead">Type a company. The app fits beta to five years of real monthly returns, then builds the expected return piece by piece.</p>
+      <div class="cta">
+        <a class="btn main" href="#get">Download for Mac</a>
+        <a class="btn ghost" href="https://github.com/nachoie123/capm-explainer">Source on GitHub</a>
+      </div>
+    </div>
+
+    <figure class="fig" id="hero-fig" style="margin:0">
+      <svg class="chart" id="hero-chart" role="img" aria-label="Scatter of 59 monthly returns, Inditex against the Euro Stoxx 50, December 2021 to October 2026, with the least squares line. Its slope, beta, is 1.141."></svg>
+      <div class="eq" aria-label="Expected return 5.84% equals 2.50% plus 1.141 times 2.93%">
+        <div class="term er dn wait" id="t-er"><span class="num">5.84%</span><i>E[R], expected return</i></div>
+        <div class="op">=</div>
+        <div class="term rf up wait" id="t-rf"><span class="num">2.50%</span><i>R<sub>f</sub>, the safe rate</i></div>
+        <div class="op">+</div>
+        <div class="term b dn wait" id="t-b"><span class="num">1.141</span><i>β, slope of the line</i></div>
+        <div class="op">×</div>
+        <div class="term p up wait" id="t-p"><span class="num">2.93%</span><i><span class="lg">E[R<sub>m</sub>] − R<sub>f</sub>, </span>the premium</i></div>
+      </div>
+      <figcaption class="figbar">
+        <span>Inditex vs Euro Stoxx 50, 59 months. <span id="hero-stat" class="tab">β 1.141 · R² 44.5%</span></span>
+        <span><span id="hero-hint" style="color:var(--ink)">Drag any dot.</span> <button class="link" id="hero-reset" type="button" hidden>Reset</button> <button class="link" id="hero-replay" type="button">Replay</button></span>
+      </figcaption>
+    </figure>
+  </section>
+
+  <section id="film" class="film rv">
+    <h2>The app, in 40 seconds.</h2>
+    <p class="lead">Inditex, from ticker to 5.84%: every step the app shows, with voice and music.</p>
+    <figure class="clip" style="margin-left:0;margin-right:0">
+      <video src="capm-explainer.mp4" poster="poster.jpg" width="1920" height="1080" controls playsinline preload="none" aria-label="CAPM Explainer promo film, 40 seconds, with sound"></video>
+      <button class="play" type="button" aria-label="Play the 40 second film"><i aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5Z"/></svg></i><span>Watch the film · sound on</span><small>0:40</small></button>
+    </figure>
+  </section>
+
+  <section id="beta" class="rv">
+    <div class="col">
+      <h2>Beta is the slope that misses the least.</h2>
+      <p class="lead">Each square is one month's miss: the gap from the dot to the line, squared. Least squares (OLS) picks the slope with the smallest total area. Move the slider and try to beat it.</p>
+    </div>
+    <div class="ls">
+      <figure class="fig" style="margin:0"><svg class="chart" id="ls-chart" role="img" aria-label="The same 59 months with your line and the squared errors"></svg>
+        <figcaption class="figbar"><span><b class="t-p">Purple</b>: your line, through the average month. <b class="t-b">Green</b>: least squares.</span></figcaption></figure>
+      <div class="side">
+        <div class="slider">
+          <label for="ls-b">Your slope: <b class="t-p tab" id="ls-bv">0.40</b></label>
+          <input type="range" id="ls-b" min="0" max="2.5" step="0.01" value="0.40">
+        </div>
+        <div class="fig" style="padding:12px 12px 8px">
+          <h3>Total squared error for every slope</h3>
+          <svg class="chart" id="bowl" role="img" aria-label="Total squared error as a function of the slope: a bowl with its bottom at 1.141"></svg>
+        </div>
+        <dl class="readout">
+          <div style="display:contents"><dt>Your line, total area (%²)</dt><dd id="ls-mine">0</dd></div>
+          <div class="best" style="display:contents"><dt>Least squares, β 1.141 (%²)</dt><dd id="ls-best">0</dd></div>
+        </dl>
+        <p class="verdict" id="ls-verdict" aria-live="polite"></p>
+      </div>
+    </div>
+    <p class="cov">The app does it in one line: <span class="t-b">β</span> = Cov(R<sub>i</sub>, R<sub>m</sub>) / Var(R<sub>m</sub>), on monthly returns from Yahoo Finance, against the index of the stock's region.</p>
+  </section>
+
+  <section id="pieces" class="rv">
+    <div class="col"><h2>The other two pieces.</h2>
+    <p class="lead">Beta says how much market risk you carry. These two say what that risk pays.</p></div>
+    <div class="pieces">
+      <ol class="steps">
+        <li><span class="f"><span class="t-rf">R<sub>f</sub></span> = 2.50%</span><p>The safe rate. US stocks use the live 10-year Treasury (^TNX, 5.28% in the runs on this page). Yahoo has no Bund yield, so euro and pound stocks start from a default you can change.</p></li>
+        <li><span class="f">E[R<sub>m</sub>] = 2.36% × (1 + 3%) + 3% = 5.43%</span><p>The market's return, looking forward, by the Gordon model: the dividend yield of a Euro Stoxx 50 ETF (EXW1.DE), grown at g = 3%. Not a historical average. g is yours to change.</p></li>
+        <li><span class="f"><span class="t-p">Premium</span> = 5.43% − 2.50% = 2.93%</span><p>What the market pays above the safe rate.</p></li>
+        <li class="total"><span class="f"><span class="t-er">E[R]</span> = <span class="t-rf">2.50%</span> + <span class="t-b">1.141</span> × <span class="t-p">2.93%</span> = <span class="t-er">5.84%</span></span><p>What an investor should ask of Inditex per year, for the market risk it carries. The app's real output for ITX.MC.</p></li>
+      </ol>
+      <figure class="appclip">
+        <video data-src="media/app-itx.mp4" poster="media/app-itx.jpg" width="640" height="758" muted loop playsinline preload="none" aria-label="Screen recording of the app chaining the Gordon sub-calculation into the main formula"></video>
+        <figcaption>Real recording. The app chains the Gordon sub-step back into the main formula (its interface is in Spanish).</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="limits" class="rv">
+    <div class="col"><h2>Where it breaks.</h2>
+    <p class="lead">A number with no error bar is a guess. All of these are measured on the same data.</p></div>
+    <dl class="limits">
+      <div><dt class="t-b">44.5%<small>R², Inditex</small></dt><dd>of Inditex's monthly moves are explained by the market. The other 55.5% is the company's own news, which CAPM says you are not paid for. The app prints R² next to every beta.</dd></div>
+      <div><dt>0.80 to 1.48<small>95% range for β</small></dt><dd>Standard error 0.169 over 59 months. Push both ends through the formula and the 5.84% becomes anything from <b>4.85%</b> to <b>6.84%</b>. The point estimate is the middle of a wide band.</dd></div>
+      <div><dt>1.13 → 1.18<small>β, first half → second half</small></dt><dd>Beta over the first 29 months (Dec 2021 to Apr 2024) against the last 30 (May 2024 to Oct 2026). It holds steady, so the slope is not a fluke of one period.</dd></div>
+      <div><dt class="t-er">−0.26%<small>US market premium</small></dt><dd class="wide"><p>The Gordon return of the S&amp;P 500 (5.02%: a thin 0.98% dividend yield grown at g = 4%) sits below the 10-year Treasury (5.28%). The premium turns negative, so in the US a riskier stock gets a <b>lower</b> expected return. That is the model being honest about its inputs, and why g is adjustable.</p>
+        <div class="sml">
+          <svg class="chart" id="sml" role="img" aria-label="Expected return against beta. The euro line rises with beta; the US line falls slightly, with Nvidia lowest at 4.70%."></svg>
+          <div class="tablewrap"><table>
+            <thead><tr><th>Ticker</th><th>β</th><th>R²</th><th>R<sub>f</sub></th><th>E[R]</th></tr></thead>
+            <tbody>
+              <tr><td>ITX.MC</td><td>1.141</td><td>44.5%</td><td>2.50%</td><td>5.84%</td></tr>
+              <tr><td>KO</td><td>0.284</td><td>7.8%</td><td>5.28%</td><td>5.20%</td></tr>
+              <tr><td>MSFT</td><td>1.053</td><td>37.9%</td><td>5.28%</td><td>5.01%</td></tr>
+              <tr><td>AAPL</td><td>1.098</td><td>48.2%</td><td>5.28%</td><td>4.99%</td></tr>
+              <tr><td>NVDA</td><td>2.231</td><td>50.5%</td><td>5.28%</td><td>4.70%</td></tr>
+            </tbody></table><p class="note">E[R] from the app's unrounded inputs: US R<sub>f</sub> 5.277%, US premium −0.258%.</p></div>
+        </div></dd></div>
+      <div><dt>0.02%<small>R², Repsol</small></dt><dd>Repsol's beta comes out at 0.02, but the market explains 0.02% of its moves: Yahoo's data for it is noisy. The app flags that beta as unreliable instead of passing it off as real.</dd></div>
+    </dl>
+  </section>
+
+  <section id="get" class="rv">
+    <div class="col">
+      <h2>Get it.</h2>
+      <p class="lead">Free and open source. A Mac app with the same steps, or the Python server if you prefer.</p>
+    </div>
+    <div class="cta">
+      <a class="btn main" href="https://github.com/nachoie123/capm-explainer/releases/latest/download/CAPM-Explainer-AppleSilicon.dmg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12m0 0-5-5m5 5 5-5M5 20h14"/></svg>Download for Mac</a>
       <a class="btn ghost" href="https://github.com/nachoie123/capm-explainer/releases/latest/download/CAPM-Explainer-Intel.dmg">Intel version</a>
     </div>
-    <p class="small">Free &amp; open source · Apple Silicon (M1 or later) and Intel · 35 MB / 38 MB · macOS 14+ · interface in Spanish · educational, not financial advice · <a href="https://github.com/nachoie123/capm-explainer">Source on GitHub</a> · <a href="#install">How to install</a></p>
-  </section>
+    <p class="note">Apple Silicon (M1 or later) 35 MB · Intel 38 MB · macOS 14+ · interface in Spanish · needs internet for Yahoo Finance · educational, not financial advice · <a href="https://github.com/nachoie123/capm-explainer">Source on GitHub</a></p>
 
-  <h2>One formula, taken apart</h2>
-  <div class="card formula">E[R] = R<sub>f</sub> + <b>β</b> · (E[R<sub>m</sub>] − R<sub>f</sub>)</div>
-  <p class="small">The expected return of a stock is what you earn for lending to the safe borrower (R<sub>f</sub>), plus extra for the risk you can't diversify away (β times the market premium). The app computes each piece from real data instead of asking you to type it in.</p>
+    <div class="install" id="install">
+      <h3>Install on your Mac</h3>
+      <p class="isub">About a minute. Step 3 happens only the first time.</p>
+      <ol class="isteps">
+        <li>
+          <div><b class="t">Drag it into Applications</b><p>Open <b>the .dmg</b> and drag <b>CAPM Explainer</b> onto the <b>Applications</b> folder.</p></div>
+          <div class="iart" aria-hidden="true"><div class="iwin idrag"><div><img class="iicon" src="icon.png" alt=""><span>CAPM Explainer</span></div><div class="arr"></div><div><div class="ifold"></div><span>Applications</span></div></div></div>
+        </li>
+        <li>
+          <div><b class="t">Open it. macOS stops it. Click Done.</b><p>macOS says Apple could not verify “CAPM Explainer” is free of malware. It says that about every app that isn't notarized by Apple. Click <b>Done</b>, not Move to Trash.</p></div>
+          <div class="iart" aria-hidden="true"><div class="iwin idlg"><img class="iicon" src="icon.png" alt=""><h4>“CAPM Explainer” Not Opened</h4><p>Apple could not verify “CAPM Explainer” is free of malware that may harm your Mac or compromise your privacy.</p><span class="ibtn on">Done</span><span class="ibtn">Move to Trash</span></div></div>
+        </li>
+        <li>
+          <div><b class="t">Open Anyway, once</b><p>Open <b>System Settings → Privacy &amp; Security</b>, scroll down to <b>Security</b> and click <b>Open Anyway</b> next to “CAPM Explainer” was blocked. Confirm with your password or Touch ID. From then on it opens with a double-click.</p></div>
+          <div class="iart" aria-hidden="true"><div class="iwin iset"><div class="ihead">Privacy &amp; Security</div><div class="ilbl">Security</div><div class="irow"><span>“CAPM Explainer” was blocked to protect your Mac.</span><span class="ibtn on">Open Anyway</span></div></div></div>
+        </li>
+        <li class="noart"><div><b class="t">Then: type a company</b><p>Write a name or ticker (<b>Inditex</b>, <b>KO</b>, <b>Apple</b>) and press <b>Calcular</b>. The app speaks Spanish and needs internet for Yahoo Finance data.</p></div></li>
+      </ol>
+      <div class="iwhy">
+        <p><b>Why the warning?</b> Notarizing an app needs a paid Apple developer account ($99 a year). This is a free side project, so it isn't notarized. The full source code is on GitHub, and you can check that your download is exactly the file I built. In Terminal:</p>
+        <pre>shasum -a 256 ~/Downloads/CAPM-Explainer-AppleSilicon.dmg</pre><p>(Apple Silicon) should print <code>6eeddb8bc0a542db4186127caedd61975e0ee458bb6b54591ac1b9b023145f1c</code></p><pre>shasum -a 256 ~/Downloads/CAPM-Explainer-Intel.dmg</pre><p>(Intel) should print <code>aef94da3e8a374c3998397a4e8fdfcad92a31ea27f70417cdcad78f5f3c2b0fb</code></p>
+        <details><summary>Prefer the Terminal for step 3?</summary><pre>xattr -dr com.apple.quarantine "/Applications/CAPM Explainer.app"</pre></details>
+      </div>
+    </div>
 
-  <h2>A real run: Inditex (ITX.MC)</h2>
-  <div class="stats">
-    <div class="card stat"><small>R<sub>f</sub></small><div class="num">2.50%</div></div>
-    <div class="card stat"><small>β</small><div class="num">1.141</div></div>
-    <div class="card stat"><small>PREMIUM</small><div class="num">2.93%</div></div>
-    <div class="card stat hot"><small>E[R]</small><div class="num">5.84%</div></div>
-  </div>
-  <p class="small">2.50% + 1.141 × 2.93% = 5.84%. Beta comes from a regression of 59 monthly returns against the Euro Stoxx 50 (R² = 45%). The market return, 5.43%, comes from the Gordon model: dividend yield 2.36% × (1 + 3%) + 3%. Numbers are the app's real output, recorded in the video above.</p>
-
-  <h2>How each number is found</h2>
-  <div class="grid g3">
-    <div class="card"><b>Beta by regression</b><p>Covariance of the stock with its market index over variance of the index, on monthly returns. It shows R² so you can see how much to trust it.</p></div>
-    <div class="card"><b>Risk-free rate</b><p>US stocks use the live 10-year Treasury (^TNX). EUR and GBP use an adjustable default, because Yahoo has no European bond yields.</p></div>
-    <div class="card"><b>Forward market return</b><p>The Gordon model: dividend yield × (1 + g) + g, not a historical average. The growth g is yours to change.</p></div>
-    <div class="card"><b>Search by name</b><p>"Repsol" resolves to REP.MC through Yahoo's search. US, Eurozone and UK markets are supported.</p></div>
-    <div class="card"><b>Honest warnings</b><p>Repsol's beta comes out at 0.02 with R² of 0.02%: Yahoo's data for it is noisy. The app says so instead of showing a fake beta.</p></div>
-    <div class="card"><b>Steps, animated</b><p>The formula, each component, a sub-calculation for the market return, then the substitution. Formulas rendered with KaTeX.</p></div>
-  </div>
-
-  <h2>Same day, other tickers</h2>
-  <div class="card scroll"><table>
-    <thead><tr><th>Ticker</th><th>β</th><th>R²</th><th>R<sub>f</sub></th><th>E[R]</th></tr></thead>
-    <tbody>
-      <tr><td>ITX.MC (EUR)</td><td>1.141</td><td>45%</td><td>2.50%</td><td>5.84%</td></tr>
-      <tr><td>AAPL</td><td>1.098</td><td>48%</td><td>5.28%</td><td>4.99%</td></tr>
-      <tr><td>MSFT</td><td>1.053</td><td>38%</td><td>5.28%</td><td>5.01%</td></tr>
-      <tr><td>NVDA</td><td>2.231</td><td>51%</td><td>5.28%</td><td>4.70%</td></tr>
-      <tr><td>KO</td><td>0.284</td><td>8%</td><td>5.28%</td><td>5.20%</td></tr>
-    </tbody></table></div>
-  <p class="small">Look at the US rows: the forward market return from the Gordon model (5.02%) is currently below the 10-year yield (5.28%), so the premium is negative and a higher beta gives a lower expected return. That is the model being honest about a thin dividend yield, and it is why the app lets you change g. A known limitation, written in the README.</p>
-
-  <section class="install" id="install">
-  <h2>Install on your Mac</h2>
-  <p class="isub">About a minute. Step 3 happens only the first time.</p>
-  <ol class="isteps">
-    <li>
-      <div><b class="t">Drag it into Applications</b><p>Open <b>the .dmg</b> and drag <b>CAPM Explainer</b> onto the <b>Applications</b> folder.</p></div>
-      <div class="iart" aria-hidden="true"><div class="iwin idrag"><div><img class="iicon" src="icon.png" alt=""><span>CAPM Explainer</span></div><div class="arr"></div><div><div class="ifold"></div><span>Applications</span></div></div></div>
-    </li>
-    <li>
-      <div><b class="t">Open it. macOS stops it. Click Done.</b><p>macOS says Apple could not verify “CAPM Explainer” is free of malware. It says that about every app that isn't notarized by Apple. Click <b>Done</b>, not Move to Trash.</p></div>
-      <div class="iart" aria-hidden="true"><div class="iwin idlg"><img class="iicon" src="icon.png" alt=""><h4>“CAPM Explainer” Not Opened</h4><p>Apple could not verify “CAPM Explainer” is free of malware that may harm your Mac or compromise your privacy.</p><span class="ibtn on">Done</span><span class="ibtn">Move to Trash</span></div></div>
-    </li>
-    <li>
-      <div><b class="t">Open Anyway, once</b><p>Open <b>System Settings → Privacy &amp; Security</b>, scroll down to <b>Security</b> and click <b>Open Anyway</b> next to “CAPM Explainer” was blocked. Confirm with your password or Touch ID. From then on it opens with a double-click.</p></div>
-      <div class="iart" aria-hidden="true"><div class="iwin iset"><div class="ihead">Privacy &amp; Security</div><div class="ilbl">Security</div><div class="irow"><span>“CAPM Explainer” was blocked to protect your Mac.</span><span class="ibtn on">Open Anyway</span></div></div></div>
-    </li>
-  <li class="noart"><div><b class="t">Then: type a company</b><p>Write a name or ticker (<b>Inditex</b>, <b>KO</b>, <b>Apple</b>) and press <b>Calcular</b>. The app speaks Spanish and needs internet for Yahoo Finance data.</p></div></li>
-  </ol>
-  <div class="iwhy">
-    <p><b>Why the warning?</b> Notarizing an app needs a paid Apple developer account ($99 a year). This is a free side project, so it isn't notarized. The full source code is on GitHub, and you can check that your download is exactly the file I built. In Terminal:</p>
-    <pre>shasum -a 256 ~/Downloads/CAPM-Explainer-AppleSilicon.dmg</pre><p>(Apple Silicon) should print <code>6eeddb8bc0a542db4186127caedd61975e0ee458bb6b54591ac1b9b023145f1c</code></p><pre>shasum -a 256 ~/Downloads/CAPM-Explainer-Intel.dmg</pre><p>(Intel) should print <code>aef94da3e8a374c3998397a4e8fdfcad92a31ea27f70417cdcad78f5f3c2b0fb</code></p>
-    <details><summary>Prefer the Terminal for step 3?</summary><pre>xattr -dr com.apple.quarantine "/Applications/CAPM Explainer.app"</pre></details>
-  </div>
-  </section>
-
-  <h2 id="run">Or run it from source</h2>
-  <div class="card"><pre>git clone https://github.com/nachoie123/capm-explainer
+    <div class="src" id="run">
+      <h3 style="font-size:24px;margin-bottom:12px">Or run it from source</h3>
+      <pre>git clone https://github.com/nachoie123/capm-explainer
 cd capm-explainer
 pip install -r requirements.txt
-python server.py   # then open http://localhost:8000</pre></div>
-  <p class="small">The app needs its small Python server (it fetches Yahoo data and does the maths), so it can't run as a static page here. There's also a command line: <code>python capm.py KO</code>.</p>
+python server.py   # then open http://localhost:8000</pre>
+      <p class="note">The app needs its small Python server (it fetches Yahoo data and does the maths), so it can't run as a static page here. There's also a command line: <code>python capm.py KO</code>.</p>
+    </div>
+  </section>
 
-  <footer>Built by <a href="https://www.linkedin.com/in/nacho-san-benito/">Ignacio San Benito</a> · <a href="https://github.com/nachoie123/capm-explainer">GitHub</a></footer>
+  <footer><a href="https://nachosanbenito.com">Ignacio San Benito</a> · IE University</footer>
 </main>
+
+<script>
+(() => {
+  /* 59 real monthly returns in %, [Euro Stoxx 50, Inditex], Dec 2021 to Oct 2026, from the app's own capm.py (Yahoo Finance) */
+  const DATA = [[5.792,2.405],[-2.88,-6.274],[-5.997,-11.743],[-0.553,-16.186],[-2.554,3.999],[-0.359,11.393],[-8.824,-3.573],[7.33,9.727],[-5.147,-9.033],[-5.659,-1.253],[9.021,9.98],[9.597,8.37],[-4.316,-0.04],[9.749,15.171],[1.8,1.642],[1.809,6.222],[1.026,2.798],[-3.241,0.417],[4.292,13.327],[1.642,-1.833],[-3.896,1.58],[-2.85,-0.198],[-2.72,-6.06],[7.913,16.221],[3.176,4.229],[2.803,0.71],[4.934,3.274],[4.216,13.802],[-3.191,-6.599],[1.269,1.657],[-1.799,6.428],[-0.431,-3.236],[1.745,9.184],[0.857,8.493],[-3.456,-0.149],[-0.481,-0.229],[1.906,-4.868],[7.984,6.205],[3.342,-1.366],[-3.938,-11.827],[-1.68,4.846],[3.999,1.016],[-1.18,-7.418],[0.315,-5.138],[0.598,0.692],[3.33,11.303],[2.388,3.751],[0.108,0.731],[2.174,16.767],[2.701,-2.378],[3.205,3.309],[-9.264,-13.34],[5.598,4.484],[2.874,5.378],[4.587,3.415],[0.473,2.395],[0.978,2.764],[-2.354,-7.034],[-0.367,-1.372]];
+  const RF = 2.50, MRP = 2.9308;   // capm.py output for ITX.MC: Rf (EUR default), E[Rm] 5.4308% − Rf
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
+  const $ = s => document.querySelector(s);
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent && parent.appendChild(e); return e };
+  const fmt = (v, d = 2) => v.toFixed(d);
+  const ease = t => 1 - Math.pow(1 - t, 3);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  function ols(P){
+    const n = P.length; let mx = 0, my = 0; for (const [x, y] of P){ mx += x; my += y } mx /= n; my /= n;
+    let sxx = 0, sxy = 0, syy = 0; for (const [x, y] of P){ sxx += (x-mx)**2; sxy += (x-mx)*(y-my); syy += (y-my)**2 }
+    const b = sxy / sxx; return {n, mx, my, sxx, sxy, syy, b, a: my - b*mx, r2: sxy*sxy/(sxx*syy), sse: s => syy - 2*s*sxy + s*s*sxx};
+  }
+  window.__capm = ols(DATA);   // read by the visual check: must give β 1.141
+
+  /* one scatter, drawn at its real pixel size so the 12px ticks stay 12px on a phone */
+  function Scatter(svg, o){
+    const S = {P: DATA.map(p => p.slice()), beta: 0, alpha: 0, line2: null, sqOp: 0, shown: DATA.map(() => 1), W: 0, H: 0};
+    const X = [-12, 12], Y = [-18, 18], m = {l: 46, r: 12, t: 10, b: 40};
+    const g = {grid: el('g', {class: 'grid'}, svg), axis: el('g', {class: 'axis'}, svg)};
+    const clipId = svg.id + '-clip'; const cp = el('clipPath', {id: clipId}, el('defs', {}, svg)); const cr = el('rect', {}, cp);
+    const plot = el('g', {'clip-path': `url(#${clipId})`}, svg);
+    const ref = el('line', {class: 'ref'}, plot);
+    const sq = el('g', {class: 'sq'}, plot);
+    const fit = el('line', {class: o.mine ? 'mine' : 'fit'}, plot);
+    const best = o.mine ? el('line', {class: 'fit', opacity: .9}, plot) : null;
+    const rects = S.P.map(() => el('rect', {}, sq));
+    const pts = S.P.map(() => el('circle', {class: 'pt', r: 3.6}, plot));
+    const hits = o.drag ? S.P.map((_, i) => { const h = el('circle', {class: 'hit', r: 11}, svg); h.dataset.i = i; return h }) : [];
+    let sx, sy;
+    function layout(){
+      const W = svg.clientWidth; if (!W) return; const H = Math.round(clamp(W * o.ratio, 240, 420));
+      S.W = W; S.H = H; svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H);
+      const pw = W - m.l - m.r, ph = H - m.t - m.b;
+      sx = v => m.l + (v - X[0]) / (X[1] - X[0]) * pw; sy = v => m.t + (Y[1] - v) / (Y[1] - Y[0]) * ph;
+      cr.setAttribute('x', m.l); cr.setAttribute('y', m.t); cr.setAttribute('width', pw); cr.setAttribute('height', ph);
+      g.grid.replaceChildren(); g.axis.replaceChildren();
+      for (let v = -10; v <= 10; v += 5){ el('line', {x1: sx(v), x2: sx(v), y1: m.t, y2: m.t + ph}, g.grid); el('text', {x: sx(v), y: m.t + ph + 17, 'text-anchor': 'middle'}, g.axis).textContent = v + '%' }
+      for (let v = -15; v <= 15; v += 5){ el('line', {x1: m.l, x2: m.l + pw, y1: sy(v), y2: sy(v)}, g.grid); el('text', {x: m.l - 7, y: sy(v) + 4, 'text-anchor': 'end'}, g.axis).textContent = v + '%' }
+      el('line', {x1: m.l, x2: m.l + pw, y1: sy(0), y2: sy(0)}, g.axis); el('line', {x1: sx(0), x2: sx(0), y1: m.t, y2: m.t + ph}, g.axis);
+      el('text', {x: m.l + pw, y: H - 4, 'text-anchor': 'end', class: 'axl'}, g.axis).textContent = 'Euro Stoxx 50, monthly return →';
+      el('text', {x: m.l + 6, y: m.t + 14, class: 'axl'}, g.axis).textContent = '↑ Inditex';
+      if (!o.mine) el('text', {x: sx(-11.6), y: sy(-8.4), 'text-anchor': 'start'}, g.axis).textContent = 'β = 1';
+      ref.setAttribute('x1', sx(X[0])); ref.setAttribute('y1', sy(X[0])); ref.setAttribute('x2', sx(X[1])); ref.setAttribute('y2', sy(X[1]));
+      draw();
+    }
+    function line(L, b, a){ L.setAttribute('x1', sx(X[0])); L.setAttribute('y1', sy(a + b*X[0])); L.setAttribute('x2', sx(X[1])); L.setAttribute('y2', sy(a + b*X[1])) }
+    function draw(){
+      if (!S.W) return;
+      line(fit, S.beta, S.alpha);
+      if (best && S.line2) line(best, S.line2.b, S.line2.a);
+      const k = (S.H - m.t - m.b) / (Y[1] - Y[0]);
+      S.P.forEach(([x, y], i) => {
+        const s = S.shown[i], cx = sx(x), cy = sy(y);
+        pts[i].setAttribute('cx', cx); pts[i].setAttribute('cy', cy + (1 - s) * -10);
+        pts[i].setAttribute('opacity', s); pts[i].setAttribute('r', 3.6 * (0.4 + 0.6*s));
+        if (hits[i]){ hits[i].setAttribute('cx', cx); hits[i].setAttribute('cy', cy) }
+        const ly = sy(S.alpha + S.beta * x), side = Math.abs(ly - cy) * (S.sqOp ? 1 : 0), r = rects[i];
+        r.setAttribute('x', cx); r.setAttribute('y', Math.min(ly, cy)); r.setAttribute('width', side); r.setAttribute('height', side);
+        r.setAttribute('opacity', S.sqOp * s);
+      });
+    }
+    new ResizeObserver(layout).observe(svg);
+    if (o.drag){
+      let drag = -1;
+      svg.addEventListener('pointerdown', e => {
+        if (!e.target.classList.contains('hit')) return;
+        drag = +e.target.dataset.i; e.target.classList.add('on'); svg.classList.add('dragging'); svg.setPointerCapture(e.pointerId); e.preventDefault();
+      });
+      svg.addEventListener('pointermove', e => {
+        if (drag < 0) return; const r = svg.getBoundingClientRect(), pw = S.W - m.l - m.r, ph = S.H - m.t - m.b;
+        const x = X[0] + (e.clientX - r.left - m.l) / pw * (X[1] - X[0]), y = Y[1] - (e.clientY - r.top - m.t) / ph * (Y[1] - Y[0]);
+        S.P[drag] = [clamp(x, X[0] + .3, X[1] - .3), clamp(y, Y[0] + .3, Y[1] - .3)]; o.drag(S);
+      });
+      const up = () => { if (drag < 0) return; hits[drag].classList.remove('on'); svg.classList.remove('dragging'); drag = -1 };
+      svg.addEventListener('pointerup', up); svg.addEventListener('pointercancel', up);
+    }
+    S.draw = draw; return S;
+  }
+
+  /* hero: the dots arrive month by month, the line turns from flat to its slope, then feeds the formula */
+  const terms = {er: $('#t-er'), rf: $('#t-rf'), b: $('#t-b'), p: $('#t-p')};
+  const stat = $('#hero-stat'), reset = $('#hero-reset'), replay = $('#hero-replay'), hint = $('#hero-hint');
+  const full = ols(DATA);
+  const hero = Scatter($('#hero-chart'), {ratio: .62, drag: S => {
+    const f = ols(S.P); S.beta = f.b; S.alpha = f.a; S.draw(); fill(f); reset.hidden = false;
+  }});
+  function fill(f){
+    terms.b.firstChild.textContent = fmt(f.b, 3);
+    terms.er.firstChild.textContent = fmt(RF + f.b * MRP) + '%';
+    stat.textContent = `β ${fmt(f.b, 3)} · R² ${fmt(f.r2 * 100, 1)}%`;
+  }
+  let timers = [], raf = 0;
+  function finalState(){
+    hero.P = DATA.map(p => p.slice()); hero.shown = DATA.map(() => 1); hero.beta = full.b; hero.alpha = full.a; hero.sqOp = 0; hero.draw();
+    Object.values(terms).forEach(t => t.classList.remove('wait', 'pop')); fill(full);
+  }
+  function intro(){
+    timers.forEach(clearTimeout); cancelAnimationFrame(raf); timers = []; reset.hidden = true;
+    hero.P = DATA.map(p => p.slice()); fill(full);
+    if (still.matches){ finalState(); return }
+    Object.values(terms).forEach(t => t.classList.add('wait'));
+    const t0 = performance.now(), N = DATA.length;
+    const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+    (function frame(now){
+      const t = now - t0;
+      hero.shown = DATA.map((_, i) => ease(clamp((t - i * 16) / 380, 0, 1)));
+      const k = ease(clamp((t - 950) / 1500, 0, 1));
+      hero.beta = full.b * k; hero.alpha = full.my - hero.beta * full.mx;
+      hero.sqOp = t < 950 ? 0 : t < 2500 ? clamp((t - 950) / 250, 0, 1) : 1 - clamp((t - 2500) / 500, 0, 1);
+      hero.draw();
+      if (t < 3050) raf = requestAnimationFrame(frame); else hero.sqOp = 0, hero.draw();
+    })(t0);
+    const on = (t, ms) => at(ms, () => { t.classList.remove('wait'); t.classList.add('pop'); at(ms + 450, () => t.classList.remove('pop')) });
+    on(terms.b, 2450); on(terms.rf, 2850); on(terms.p, 3150); on(terms.er, 3550);
+  }
+  reset.addEventListener('click', () => { finalState(); reset.hidden = true });
+  replay.addEventListener('click', intro);
+  /* start when the hero is on screen (it is, on load); a hidden tab waits instead of skipping frames */
+  const go = () => { if (document.hidden) return document.addEventListener('visibilitychange', go, {once: true}); intro() };
+  go();
+  if (matchMedia('(hover: none)').matches) hint.textContent = 'Drag a dot.';
+
+  /* least squares: your slope, through the mean, against OLS */
+  const ls = Scatter($('#ls-chart'), {ratio: .7, mine: true});
+  ls.sqOp = 1; ls.line2 = {b: full.b, a: full.a};
+  const range = $('#ls-b'), bv = $('#ls-bv'), mine = $('#ls-mine'), bestEl = $('#ls-best'), verdict = $('#ls-verdict');
+  const nf = new Intl.NumberFormat('en-US', {maximumFractionDigits: 0});
+  bestEl.textContent = nf.format(full.sse(full.b));
+  const bowl = $('#bowl'); let bw = {};
+  function drawBowl(){
+    const W = bowl.clientWidth; if (!W) return; const H = Math.round(clamp(W * .5, 130, 190)), m = {l: 8, r: 8, t: 10, b: 24};
+    bowl.setAttribute('viewBox', `0 0 ${W} ${H}`); bowl.setAttribute('height', H);
+    const max = full.sse(2.5), min = full.sse(full.b), bx = v => m.l + v / 2.5 * (W - m.l - m.r), by = v => m.t + (1 - (v - min * .9) / (max - min * .9)) * (H - m.t - m.b);
+    let d = ''; for (let s = 0; s <= 2.5001; s += .02) d += (d ? 'L' : 'M') + bx(s).toFixed(1) + ' ' + by(full.sse(s)).toFixed(1);
+    bowl.innerHTML = `<line x1="${m.l}" x2="${W - m.r}" y1="${H - m.b}" y2="${H - m.b}" style="stroke:var(--line)"/>` +
+      [0, 1, 2].map(v => `<text x="${bx(v)}" y="${H - 6}" text-anchor="middle">${v}</text>`).join('') + `<text x="${W - m.r}" y="${H - 6}" text-anchor="end" class="axl">slope →</text>` +
+      `<path d="${d}" fill="none" style="stroke:var(--muted)" stroke-width="1.5"/>` +
+      `<line x1="${bx(full.b)}" x2="${bx(full.b)}" y1="${by(min)}" y2="${H - m.b}" style="stroke:var(--b-f)" stroke-dasharray="3 3"/>` +
+      `<circle cx="${bx(full.b)}" cy="${by(min)}" r="4" style="fill:var(--b-f)"/>` +
+      `<circle id="bowl-me" r="6" style="fill:var(--p-f);stroke:var(--card);stroke-width:2px"/>`;
+    bw = {bx, by}; updLS();
+  }
+  new ResizeObserver(drawBowl).observe(bowl);
+  function updLS(){
+    const s = +range.value; ls.beta = s; ls.alpha = full.my - s * full.mx; ls.draw();
+    bv.textContent = fmt(s, 2); const e = full.sse(s); mine.textContent = nf.format(e);
+    const me = bowl.querySelector('#bowl-me'); if (me && bw.bx){ me.setAttribute('cx', bw.bx(s)); me.setAttribute('cy', bw.by(e)) }
+    const gap = e / full.sse(full.b) - 1;
+    verdict.innerHTML = Math.abs(s - full.b) < .006 ? '<b class="t-b">That is the least squares line.</b> No slope does better: you are at the bottom of the bowl.'
+      : `Your line misses by <b class="tab">${fmt(gap * 100, 1)}%</b> more than least squares. Slide toward <b class="t-b">1.14</b>.`;
+  }
+  range.addEventListener('input', () => updLS());
+
+  /* security market line: E[R] against beta, euro line vs US line */
+  const sml = $('#sml');
+  const pts = [['ITX.MC', 1.141, 5.84, 'end', -10, -5], ['KO', .284, 5.20, 'middle', 0, -11], ['MSFT, AAPL', 1.075, 5.00, 'middle', 0, 20], ['', 1.098, 4.99], ['NVDA', 2.231, 4.70, 'end', 0, -11]];
+  function drawSML(){
+    const W = sml.clientWidth; if (!W) return; const H = Math.round(clamp(W * .72, 220, 300)), m = {l: 40, r: 14, t: 12, b: 36};
+    sml.setAttribute('viewBox', `0 0 ${W} ${H}`); sml.setAttribute('height', H);
+    const x = v => m.l + v / 2.4 * (W - m.l - m.r), y = v => m.t + (9 - v) / 7 * (H - m.t - m.b);
+    let s = '';
+    for (let v = 2; v <= 9; v += 1) s += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}" style="stroke:var(--grid)"/>` + (v % 2 ? '' : `<text x="${m.l - 6}" y="${y(v) + 4}" text-anchor="end">${v}%</text>`);
+    for (const v of [0, 1, 2]) s += `<text x="${x(v)}" y="${H - 18}" text-anchor="middle">${v}</text>`;
+    s += `<text x="${W - m.r}" y="${H - 2}" text-anchor="end" class="axl">β →</text><text x="${m.l + 4}" y="${m.t + 12}" class="axl">E[R]</text>`;
+    s += `<line x1="${x(0)}" y1="${y(2.5)}" x2="${x(6.5 / 2.9308)}" y2="${y(9)}" style="stroke:var(--b-f)" stroke-width="2"/>`;
+    s += `<line x1="${x(0)}" y1="${y(5.277)}" x2="${x(2.4)}" y2="${y(5.277 - 2.4 * .2578)}" style="stroke:var(--er-f)" stroke-width="2"/>`;
+    s += `<text x="${x(1.75)}" y="${y(2.5 + 1.75 * 2.9308) - 8}" text-anchor="end" style="fill:var(--b)">euro: premium +2.93%</text>`;
+    s += `<text x="${x(2.4)}" y="${y(5.277 - 2.4 * .2578) + 18}" text-anchor="end" style="fill:var(--er)">US: premium −0.26%</text>`;
+    for (const [n, b, r, anc, dx, dy] of pts){
+      if (n === 'MSFT, AAPL'){ s += `<circle cx="${x(1.053)}" cy="${y(5.01)}" r="4.5" style="fill:var(--dot)"/>` } else s += `<circle cx="${x(b)}" cy="${y(r)}" r="4.5" style="fill:var(--dot)"/>`;
+      if (n) s += `<text x="${x(b) + dx}" y="${y(r) + dy}" text-anchor="${anc}" style="fill:var(--ink)">${n}</text>`;
+    }
+    sml.innerHTML = s;
+  }
+  new ResizeObserver(drawSML).observe(sml);
+
+  /* reveal on scroll */
+  const rv = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.classList.add('in'); rv.unobserve(e.target) } }), {rootMargin: '0px 0px -10% 0px'});
+  document.querySelectorAll('.rv').forEach(e => rv.observe(e));
+
+  /* the film: never autoplays; the button starts it with sound, then native controls take over */
+  const film = $('#film video'), pb = $('#film .play');
+  film.controls = false;
+  pb.addEventListener('click', () => { film.preload = 'auto'; film.play().catch(() => {}) });
+  film.addEventListener('play', () => { film.controls = true; pb.remove() }, {once: true});
+
+  /* the app clip: load when near, loop only while on screen; reduced motion = poster + controls */
+  const clip = $('.appclip video');
+  new IntersectionObserver((es, ob) => es.forEach(e => { if (e.isIntersecting){ clip.src = clip.dataset.src; ob.disconnect() } }), {rootMargin: '120% 0px'}).observe(clip);
+  if (still.matches) clip.controls = true;
+  else new IntersectionObserver(es => es.forEach(e => e.intersectionRatio > .3 ? clip.play().catch(() => {}) : clip.pause()), {threshold: [0, .3]}).observe(clip);
+})();
+</script>
 </body>
 </html>
