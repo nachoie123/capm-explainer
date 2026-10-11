@@ -13,3 +13,10 @@ flight-deals/
 .venv*/
 build/
 dist/
+
+apple/build/
+apple/build-release/
+apple/dist/
+apple/*.xcodeproj/
+apple/CAPMKit/.build/
+apple/CAPMKit/.swiftpm/

@@ -1,0 +1,466 @@
+{
+ "sourceLanguage": "en",
+ "version": "1.0",
+ "strings": {
+  "Type a company's name or ticker and I'll show you, step by step, how its expected return is calculated.": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Escribe el nombre o el ticker de una empresa y te enseño, paso a paso, cómo se calcula su retorno esperado."
+     }
+    }
+   }
+  },
+  "Rf and g are optional. USD uses the live US 10-year Treasury; EUR/GBP use a default you can override here.": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Rf y g son opcionales. USD usa el bono USA a 10 años en vivo; EUR/GBP usan un valor por defecto que puedes sobrescribir aquí."
+     }
+    }
+   }
+  },
+  "Calculate": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Calcular"
+     }
+    }
+   }
+  },
+  "Searching…": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Buscando…"
+     }
+    }
+   }
+  },
+  "Company": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Empresa"
+     }
+    }
+   }
+  },
+  "Step 1 · The formula": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Paso 1 · La fórmula"
+     }
+    }
+   }
+  },
+  "Step 2 · Components": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Paso 2 · Componentes"
+     }
+    }
+   }
+  },
+  "Sub-calculation · E[Rₘ]": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Sub-cálculo · E[Rₘ]"
+     }
+    }
+   }
+  },
+  "Step 3 · Substitution": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Paso 3 · Sustitución"
+     }
+    }
+   }
+  },
+  "You searched “%@” → %@": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Buscaste “%@” → %@"
+     }
+    }
+   }
+  },
+  "Reference market: %@ · Dividend ETF: %@": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Mercado de referencia: %@ · ETF de dividendos: %@"
+     }
+    }
+   }
+  },
+  "Expected return · the CAPM model": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Retorno esperado · modelo CAPM"
+     }
+    }
+   }
+  },
+  "Expected return of the asset": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Retorno esperado del activo"
+     }
+    }
+   }
+  },
+  "· what we want to find": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "· lo que queremos hallar"
+     }
+    }
+   }
+  },
+  "Risk-free rate": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Tasa libre de riesgo"
+     }
+    }
+   }
+  },
+  "· sovereign bond": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "· bono soberano"
+     }
+    }
+   }
+  },
+  "Beta": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Beta"
+     }
+    }
+   }
+  },
+  "· how much the stock moves relative to the market": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "· cuánto se mueve la acción respecto al mercado"
+     }
+    }
+   }
+  },
+  "Expected market return": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Retorno esperado del mercado"
+     }
+    }
+   }
+  },
+  "Market risk premium": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Prima de riesgo de mercado"
+     }
+    }
+   }
+  },
+  "Risk-free rate · Rf": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Tasa libre de riesgo · Rf"
+     }
+    }
+   }
+  },
+  "10-year sovereign bond (%@)": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Bono soberano a 10 años (%@)"
+     }
+    }
+   }
+  },
+  "Beta · βᵢ": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Beta · βᵢ"
+     }
+    }
+   }
+  },
+  "Regression of monthly returns vs %@": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Regresión de retornos mensuales vs %@"
+     }
+    }
+   }
+  },
+  "· %lld months · R² = %@": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "· %lld meses · R² = %@"
+     }
+    }
+   }
+  },
+  "Each dot is one month: how the market moved (across) and how %@ moved (up). The slope of the gold line is β.": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Cada punto es un mes: cuánto se movió el mercado (horizontal) y cuánto se movió %@ (vertical). La pendiente de la recta dorada es β."
+     }
+    }
+   }
+  },
+  "**E[Rₘ]** is not a direct input: it needs its own formula. We chain into the Gordon model…": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "**E[Rₘ]** no es un dato directo: necesita su propia fórmula. Encadenamos al modelo de Gordon…"
+     }
+    }
+   }
+  },
+  "Expected market return · the Gordon model": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Retorno esperado del mercado · modelo de Gordon"
+     }
+    }
+   }
+  },
+  "Market dividend yield": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Dividend yield del mercado"
+     }
+    }
+   }
+  },
+  "Expected nominal growth": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Crecimiento nominal esperado"
+     }
+    }
+   }
+  },
+  "(adjustable)": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "(ajustable)"
+     }
+    }
+   }
+  },
+  "We carry **E[Rₘ] = %@** back into the main formula.": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Llevamos **E[Rₘ] = %@** de vuelta a la fórmula principal."
+     }
+    }
+   }
+  },
+  "We plug each value into the formula": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Metemos cada valor en la fórmula"
+     }
+    }
+   }
+  },
+  "Expected return (CAPM) · %@": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Retorno esperado (CAPM) · %@"
+     }
+    }
+   }
+  },
+  "Note: it comes out below the risk-free asset: very low beta and a tight market premium.": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Ojo: sale por debajo del activo sin riesgo: beta muy baja y prima de mercado ajustada."
+     }
+    }
+   }
+  },
+  "Could not calculate **%@**: %@": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "No se pudo calcular **%@**: %@"
+     }
+    }
+   }
+  },
+  "Data: Yahoo Finance · Educational tool, not financial advice.": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Datos: Yahoo Finance · Herramienta educativa, no es asesoramiento financiero."
+     }
+    }
+   }
+  },
+  "Market, monthly return": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Mercado, retorno mensual"
+     }
+    }
+   }
+  },
+  "%@, monthly return": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "%@, retorno mensual"
+     }
+    }
+   }
+  },
+  "Market %@ · %@ %@": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Mercado %@ · %@ %@"
+     }
+    }
+   }
+  },
+  "Repsol, Apple, KO, Santander…": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Repsol, Apple, KO, Santander…"
+     }
+    }
+   }
+  },
+  "Rf %": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Rf %"
+     }
+    }
+   }
+  },
+  "g %": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "g %"
+     }
+    }
+   }
+  },
+  "(MRP)": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "(MRP)"
+     }
+    }
+   }
+  },
+  "(ETF %@)": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "(ETF %@)"
+     }
+    }
+   }
+  },
+  "According to CAPM, an investor should demand around **%@** a year for holding %@, given its risk (β=%@) against the market.": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Según CAPM, un inversor debería exigir en torno a **%@** anual por tener %@, dado su riesgo (β=%@) frente al mercado."
+     }
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,106 @@
+{
+ "sourceLanguage": "en",
+ "version": "1.0",
+ "strings": {
+  "Type a company name or ticker.": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Escribe el nombre o el ticker de una empresa."
+     }
+    }
+   }
+  },
+  "'%@' not found on Yahoo. Is it spelled right?": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "'%@' no aparece en Yahoo. ¿Está bien escrito?"
+     }
+    }
+   }
+  },
+  "Markets in %@ are not supported yet (USD, EUR, GBP only).": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Mercado en %@ aún no soportado (solo USD, EUR, GBP)."
+     }
+    }
+   }
+  },
+  "Not enough history (%lld months) to estimate beta.": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Histórico insuficiente (%lld meses) para estimar la beta."
+     }
+    }
+   }
+  },
+  "No dividend yield for %@.": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Sin dividend yield para %@."
+     }
+    }
+   }
+  },
+  "Could not read the US 10-year Treasury (^TNX) right now. Try again.": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "No pude leer el bono USA a 10 años (^TNX) ahora mismo. Prueba de nuevo."
+     }
+    }
+   }
+  },
+  "No stock found for '%@' in a supported market (USD, EUR, GBP). Try the exact ticker (e.g. REP.MC).": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "No encontré ninguna acción para '%@' en un mercado soportado (USD, EUR, GBP). Prueba con el ticker exacto (p. ej. REP.MC)."
+     }
+    }
+   }
+  },
+  "Yahoo is rate-limiting requests (429). Wait a minute and try again.": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Yahoo está limitando las peticiones (429). Espera un minuto y prueba otra vez."
+     }
+    }
+   }
+  },
+  "Short history (%lld months, recent IPO): beta is unreliable.": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Histórico corto (%lld meses, IPO reciente): la beta es poco fiable."
+     }
+    }
+   }
+  },
+  "Unreliable beta: %@ barely correlates with the market (%@, R²=%@). Yahoo's data for this stock is noisy. Treat it as indicative, not as a real beta.": {
+   "localizations": {
+    "es": {
+     "stringUnit": {
+      "state": "translated",
+      "value": "Beta poco fiable: %@ apenas correlaciona con el mercado (%@, R²=%@). Los datos de Yahoo para este valor son ruidosos. Tómalo como orientativo, no como una beta real."
+     }
+    }
+   }
+  }
+ }
+}

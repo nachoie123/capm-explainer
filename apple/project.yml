@@ -1,0 +1,37 @@
+name: CAPM Explainer
+options:
+  bundleIdPrefix: com.nachosanbenito
+  deploymentTarget: { iOS: "17.0", macOS: "14.0" }
+  developmentLanguage: en
+  createIntermediateGroups: true
+packages:
+  CAPMKit: { path: CAPMKit }
+targets:
+  CAPM Explainer:
+    type: application
+    supportedDestinations: [iOS, macOS]
+    sources: [App]
+    dependencies: [{ package: CAPMKit }]
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: CAPM Explainer
+        CFBundleName: CAPM Explainer
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        LSApplicationCategoryType: public.app-category.finance
+        ITSAppUsesNonExemptEncryption: false
+        CFBundleURLTypes: [{ CFBundleURLName: com.nachosanbenito.capm, CFBundleURLSchemes: [capm] }]
+        NSHumanReadableCopyright: "© 2026 Ignacio San Benito"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nachosanbenito.capm
+        PRODUCT_NAME: CAPM Explainer
+        DEVELOPMENT_TEAM: 4HBV76K3X6
+        CODE_SIGN_STYLE: Automatic
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_VERSION: "5.10"
+        ENABLE_HARDENED_RUNTIME: YES
+        "CODE_SIGN_ENTITLEMENTS[sdk=macosx*]": App/Mac.entitlements
+        TARGETED_DEVICE_FAMILY: "1,2"
