@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CAPM Explainer nativa por dentro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Kalam:wght@300;400;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ADN Xiaohei: blanco puro, línea negra temblona, naranja = camino/flujo, rojo = aviso/resultado, azul = nota del sistema.
+   NO hay cajas de colores, sombras, degradados ni tarjetas redondeadas: el dibujo manda y la ficha es una hoja de libreta. */
+:root{--ink:#141414;--paper:#fff;--or:#ee7a12;--red:#e0282e;--blue:#2a6fdb;--mute:#77756f;--rule:#d9d7d0}
+*{box-sizing:border-box}
+html{background:#fff}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.55 Kalam,"Comic Sans MS",cursive}
+.wrap{max-width:1180px;margin:0 auto;padding:48px 16px 96px}
+
+/* portada */
+header{display:grid;grid-template-columns:1fr 1.15fr;gap:24px;align-items:center}
+header h1{font:700 64px/0.95 Caveat,cursive;margin:0}
+header h1 em{font-style:normal;color:var(--or)}
+header p{margin:12px 0 0;max-width:520px}
+header .meta{font:12.5px "JetBrains Mono",monospace;color:var(--mute);margin-top:14px}
+header svg{width:100%;height:auto}
+ol.indice{columns:2;column-gap:40px;margin:36px 0 0;padding:0;list-style:none;counter-reset:l;border-top:1.5px solid var(--ink)}
+ol.indice li{counter-increment:l;break-inside:avoid;padding:7px 0;border-bottom:1px dashed var(--rule);font:600 21px/1.2 Caveat,cursive}
+ol.indice li::before{content:counter(l,decimal-leading-zero);color:var(--or);margin-right:10px;font-family:"JetBrains Mono",monospace;font-size:13px}
+ol.indice a{color:var(--ink);text-decoration:none}
+ol.indice small{display:block;margin-left:34px;font:14px/1.3 Kalam,cursive;color:var(--mute)}
+
+/* lámina */
+section.lamina{margin:96px 0 0}
+.lamina .num{font:13px "JetBrains Mono",monospace;color:var(--or);letter-spacing:.08em}
+.lamina h2{font:700 46px/1 Caveat,cursive;margin:2px 0 6px}
+.lamina .idea{font-size:19px;max-width:780px;margin:0}
+svg.dib{width:100%;height:auto;display:block;margin:10px 0 0}
+
+/* ficha técnica: hoja de libreta debajo del dibujo */
+.ficha{display:grid;grid-template-columns:260px 1fr;gap:0 32px;border-top:1.5px solid var(--ink);padding-top:14px;margin-top:6px}
+.ficha h3{font:700 24px/1.1 Caveat,cursive;margin:0 0 6px}
+.ficha .llano p{margin:0 0 10px;font-size:16px}
+.ficha table{width:100%;border-collapse:collapse;font-size:15.5px}
+.ficha th{font:600 12px "JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);text-align:left;padding:0 10px 6px 0;border-bottom:1px solid var(--rule)}
+.ficha td{vertical-align:top;padding:8px 10px 8px 0;border-bottom:1px dashed var(--rule)}
+.ficha td:first-child{font:700 20px/1.15 Caveat,cursive;white-space:nowrap}
+.ficha .dato{margin:12px 0 0;padding:8px 0 0;font-size:15.5px;border-top:1px dashed var(--rule)}
+.ficha .dato b{color:var(--red);font-weight:400}
+code,.ref{font:12.5px/1.4 "JetBrains Mono",monospace}
+.ref{color:var(--blue);white-space:nowrap}
+code{background:#f4f3ef;padding:1px 5px;border-radius:3px;overflow-wrap:anywhere}
+.ficha>div,header>div{min-width:0}
+.cierre{margin:110px 0 0;font:700 40px/1.15 Caveat,cursive;color:var(--red);text-align:center}
+
+/* trazo a mano dentro de los SVG */
+.sk{fill:none;stroke:var(--ink);stroke-width:2.3;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round;filter:url(#wob)}
+.sk.w{fill:#fff}                     /* objeto opaco: tapa lo que hay detrás */
+.sk.or{stroke:var(--or)} .sk.red{stroke:var(--red)} .sk.blue{stroke:var(--blue)}
+.sk.fino{stroke-width:1.4} .sk.gordo{stroke-width:3.2} .sk.dash{stroke-dasharray:7 8}
+.tinta{fill:var(--ink);filter:url(#wob)}
+.brazo{fill:none;stroke:var(--ink);stroke-width:2.6;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round;filter:url(#wob)}
+svg text{font:600 25px Caveat,cursive;fill:var(--ink)}
+svg text.g{font-size:32px}            /* rótulo grande */
+svg text.p{font-size:20px}            /* rótulo pequeño */
+svg text.code{font:13px "JetBrains Mono",monospace;fill:#444}
+svg text.or{fill:var(--or)} svg text.red{fill:var(--red)} svg text.blue{fill:var(--blue)} svg text.mute{fill:var(--mute)}
+
+@media (max-width:760px){
+  header{grid-template-columns:1fr} header h1{font-size:46px}
+  ol.indice{columns:1}
+  .lamina h2{font-size:36px}
+  .ficha{grid-template-columns:1fr}
+  .ficha table,.ficha tbody,.ficha tr,.ficha td{display:block;width:100%}
+  .ficha thead{display:none}
+  .ficha td{border:0;padding:2px 0} .ficha tr{border-bottom:1px dashed var(--rule);padding:8px 0}
+  .ref{white-space:normal;word-break:break-all}
+}
+/* modo captura: explicacion.html#solo-l3 enseña solo esa lámina (lo usa shot.sh) */
+body.solo header,body.solo .cierre,body.solo ol.indice,body.solo section.lamina{display:none}
+body.solo section.lamina.ver{display:block;margin-top:0}
+</style>
+</head>
+<body>
+<script>
+(function(){var m=location.hash.match(/^#solo-(.+)$/);if(!m)return;document.body.classList.add('solo');
+addEventListener('DOMContentLoaded',function(){var s=document.getElementById(m[1]);if(s)s.classList.add('ver')})})();
+</script>
+
+<!-- ═══════════ BIBLIOTECA DE DIBUJOS ═══════════
+  Todo se usa con <use href="#id" x=".." y=".."/> o dentro de <g transform="translate(x y) scale(s) rotate(r)">.
+  Son PIEZAS para componer una escena, no escenas hechas: cada lámina inventa su propia metáfora
+  y dibuja a mano lo que falte (paths propios con class="sk"). Medidas en el comentario de cada una. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+  <filter id="wob" filterUnits="userSpaceOnUse" x="-300" y="-300" width="1800" height="1300"><!-- espacio fijo: con % las rectas desaparecen -->
+    <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="4"/>
+    <feDisplacementMap in="SourceGraphic" scale="3"/>
+  </filter>
+  <marker id="ah" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1 1.5 L10.5 6 L1 10.5" fill="none" stroke="#141414" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  <marker id="ah-or" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1 1.5 L10.5 6 L1 10.5" fill="none" stroke="#ee7a12" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  <marker id="ah-red" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1 1.5 L10.5 6 L1 10.5" fill="none" stroke="#e0282e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  <marker id="ah-blue" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1 1.5 L10.5 6 L1 10.5" fill="none" stroke="#2a6fdb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
+
+  <!-- ── EL BICHITO (Xiaohei). Origen = entre los pies, en el suelo. Serio, inexpresivo, nunca mono.
+       Los BRAZOS los dibujas tú en cada escena con class="brazo" (de hombro a objeto) + <use href="#mano"> al final.
+       Hombros aprox: #xh (-24,-50)/(28,-52) · #xh-alto (-20,-70)/(23,-72) · #xh-bajo (-29,-30)/(31,-30) -->
+  <g id="xh"><!-- judía, alto ≈ 100 -->
+    <path class="tinta" d="M-24 -22 C-31 -52 -24 -89 0 -93 C25 -96 33 -63 29 -36 C27 -24 18 -18 5 -17 C-9 -16 -20 -14 -24 -22Z"/>
+    <path class="tinta" d="M-3 -92 L1 -101 L6 -93Z"/>
+    <circle cx="-7" cy="-66" r="3.6" fill="#fff"/><circle cx="9" cy="-67" r="3.6" fill="#fff"/>
+    <path class="sk fino" d="M-9 -18 L-11 0 L-17 0 M8 -18 L10 0 L16 0"/>
+  </g>
+  <g id="xh-alto"><!-- columna, alto ≈ 125 -->
+    <path class="tinta" d="M-21 -18 C-26 -60 -22 -118 0 -122 C22 -124 27 -80 24 -40 C23 -24 16 -18 4 -17 C-8 -16 -18 -13 -21 -18Z"/>
+    <circle cx="-6" cy="-96" r="3.4" fill="#fff"/><circle cx="8" cy="-97" r="3.4" fill="#fff"/>
+    <path class="sk fino" d="M-8 -18 L-10 0 L-16 0 M7 -18 L9 0 L15 0"/>
+  </g>
+  <g id="xh-bajo"><!-- rechoncho, alto ≈ 62 (sentado en taburete, dentro de una máquina, asomando de un agujero) -->
+    <path class="tinta" d="M-29 -14 C-34 -38 -22 -62 2 -62 C26 -62 36 -40 31 -18 C28 -10 16 -9 2 -9 C-14 -9 -26 -7 -29 -14Z"/>
+    <circle cx="-7" cy="-42" r="3.4" fill="#fff"/><circle cx="10" cy="-43" r="3.4" fill="#fff"/>
+    <path class="sk fino" d="M-10 -10 L-12 0 L-18 0 M10 -10 L12 0 L18 0"/>
+  </g>
+  <g id="xh-chato"><!-- aplastado bajo un peso, ancho ≈ 150 con brazos -->
+    <path class="tinta" d="M-40 -6 C-44 -22 -20 -30 2 -30 C26 -30 46 -22 42 -8 C40 0 20 2 0 2 C-20 2 -38 2 -40 -6Z"/>
+    <circle cx="-8" cy="-16" r="3.4" fill="#fff"/><circle cx="10" cy="-16" r="3.4" fill="#fff"/>
+    <path class="brazo" d="M-40 -10 L-70 -4 M-70 -4 l-6 -6 M-70 -4 l-7 3 M42 -10 L72 -4 M72 -4 l6 -6 M72 -4 l7 3 M-22 2 L-34 14 M24 2 L36 14"/>
+  </g>
+  <g id="mano"><!-- manita de 3 dedos al final de un brazo; origen = muñeca -->
+    <path class="brazo" d="M0 0 l7 -5 M0 0 l9 0 M0 0 l6 6"/>
+  </g>
+  <g id="sudor"><!-- marcas de esfuerzo/temblor junto a algo que cuesta o falla -->
+    <path class="sk fino" d="M0 0 c-4 -8 4 -12 0 -20 M10 2 c-4 -8 4 -12 0 -20"/>
+  </g>
+  <g id="chispa"><!-- brillo/acierto: 3 rayitas -->
+    <path class="sk fino" d="M0 -6 l0 -12 M10 0 l10 -8 M-10 0 l-10 -8"/>
+  </g>
+  <g id="alarma"><!-- rayitas rojas de "¡ojo!" a ambos lados; origen = centro de lo que avisa -->
+    <path class="sk red fino" d="M-34 -8 l-14 -10 M-34 4 l-16 0 M34 -8 l14 -10 M34 4 l16 0"/>
+  </g>
+
+  <!-- ── OBJETOS (origen arriba-izquierda salvo que se diga) -->
+  <g id="caja"><!-- caja de cartón 3D, 90×70; rótulo centrado en (35,50) -->
+    <path class="sk w" d="M0 20 H70 V70 H0Z"/><path class="sk w" d="M0 20 L18 4 H88 L70 20Z"/><path class="sk w" d="M70 20 L88 4 V54 L70 70Z"/>
+  </g>
+  <g id="hoja"><!-- folio con esquina doblada, 44×56 -->
+    <path class="sk w" d="M0 0 H32 L44 12 V56 H0Z"/><path class="sk fino" d="M32 0 V12 H44 M8 22 H36 M8 30 H36 M8 38 H28 M8 46 H34"/>
+  </g>
+  <g id="pila"><!-- montón de folios, 70×50 -->
+    <path class="sk w" d="M4 14 L62 6 L68 44 L10 52Z"/><path class="sk w" d="M0 8 L58 2 L64 40 L6 46Z"/><path class="sk fino" d="M12 16 L48 12 M13 24 L52 20 M14 32 L40 29"/>
+  </g>
+  <g id="tarjeta"><!-- ficha con foto y líneas, 130×64; posts, filas, resultados -->
+    <path class="sk w" d="M0 0 H130 V64 H0Z"/><path class="sk fino" d="M10 14 H44 V46 H10Z M12 44 L24 30 L32 38 L36 34 L44 44"/><circle class="sk fino" cx="36" cy="22" r="3"/>
+    <path class="sk fino" d="M54 18 H116 M54 30 H110 M54 42 H96"/>
+  </g>
+  <g id="video"><!-- ficha de vídeo con play, 130×64 -->
+    <path class="sk w" d="M0 0 H130 V64 H0Z"/><circle class="sk fino" cx="28" cy="32" r="14"/><path class="sk red fino" d="M23 24 L35 32 L23 40Z"/>
+    <path class="sk fino" d="M54 22 H116 M54 34 H108 M54 46 H92"/>
+  </g>
+  <g id="sobre"><!-- sobre cerrado, 80×52 -->
+    <path class="sk w" d="M0 0 H80 V52 H0Z"/><path class="sk fino" d="M0 0 L40 30 L80 0"/>
+  </g>
+  <g id="cartel"><!-- cartel en palo; origen = pie del palo; texto centrado en (0,-82) -->
+    <path class="sk" d="M0 0 V-62"/><path class="sk w" d="M-50 -110 H50 V-60 H-50Z"/>
+  </g>
+  <g id="pancarta"><!-- cartelito que sostiene el bichito; origen = mano; texto en (0,-44) -->
+    <path class="sk" d="M0 0 V-24"/><path class="sk w" d="M-30 -70 H30 V-24 H-30Z"/>
+  </g>
+  <g id="agujero"><!-- agujero en el suelo; origen = centro; 170×46 -->
+    <ellipse class="sk w" cx="0" cy="0" rx="84" ry="22"/><ellipse class="tinta" cx="0" cy="4" rx="68" ry="14"/>
+  </g>
+  <g id="grieta"><!-- grieta; origen = inicio -->
+    <path class="sk" d="M0 0 l14 8 l-6 10 l16 6 l-4 12 l14 4"/>
+  </g>
+  <g id="isla-izq"><!-- acantilado; borde del precipicio a la derecha en (300,0); la roca baja hasta y≈150 -->
+    <path fill="#fff" d="M4 14 C60 28 240 26 298 4 L288 40 L300 84 L286 150 L8 150 L14 80Z"/>
+    <path class="sk" d="M4 14 L14 80 L6 150 M298 4 L288 40 L300 84 L286 150"/>
+    <path class="sk fino" d="M250 50 l8 34 M270 34 l6 40 M232 92 l6 44 M190 70 l4 50 M262 110 l4 30"/>
+    <path class="sk w" d="M0 10 C20 -12 250 -16 300 0 C296 18 240 26 140 26 C60 26 4 22 0 10Z"/>
+    <path class="sk fino" d="M60 4 l4 -8 M64 4 l-2 -9 M150 -2 l3 -7 M200 8 h10"/>
+  </g>
+  <g id="isla-der"><!-- acantilado; borde del precipicio a la izquierda en (0,0) -->
+    <path fill="#fff" d="M2 4 C60 26 240 28 296 14 L286 80 L294 150 L14 150 L0 84 L12 40Z"/>
+    <path class="sk" d="M2 4 L12 40 L0 84 L14 150 M296 14 L286 80 L294 150"/>
+    <path class="sk fino" d="M50 50 l-8 34 M30 34 l-6 40 M68 92 l-6 44 M110 70 l-4 50 M38 110 l-4 30"/>
+    <path class="sk w" d="M0 0 C50 -16 280 -12 300 10 C296 22 240 26 160 26 C60 26 4 18 0 0Z"/>
+    <path class="sk fino" d="M240 4 l4 -8 M244 4 l-2 -9 M150 -2 l3 -7 M90 8 h10"/>
+  </g>
+  <g id="suelo"><!-- línea de suelo de 240; origen = extremo izquierdo -->
+    <path class="sk fino" d="M0 0 C60 2 180 -2 240 1 M20 7 l12 0 M90 6 l18 0 M170 7 l10 0"/>
+  </g>
+  <g id="embudo"><!-- embudo; origen = centro de la boca; 120×110 -->
+    <ellipse class="sk w" cx="0" cy="0" rx="60" ry="12"/><path class="sk w" d="M-60 0 L-10 70 V108 H10 V70 L60 0"/><path class="sk fino" d="M-60 0 C-40 10 40 10 60 0"/>
+  </g>
+  <g id="cinta"><!-- cinta transportadora 360 de largo; superficie de apoyo en y=0 -->
+    <path class="sk w" d="M0 0 H360 A14 14 0 0 1 360 28 H0 A14 14 0 0 1 0 0Z"/>
+    <circle class="sk fino" cx="0" cy="14" r="8"/><circle class="sk fino" cx="90" cy="14" r="8"/><circle class="sk fino" cx="180" cy="14" r="8"/><circle class="sk fino" cx="270" cy="14" r="8"/><circle class="sk fino" cx="360" cy="14" r="8"/>
+    <path class="sk" d="M20 28 L14 70 M340 28 L346 70"/>
+  </g>
+  <g id="maquina"><!-- máquina con ojos, 280×234; ventana (50,62)-(230,182) para meter al bichito; bocas en (-22,92..132) y (280..302,92..132) -->
+    <path class="sk w" d="M18 30 C10 30 0 40 0 56 V196 C0 212 10 220 24 220 H256 C270 220 280 212 280 196 V56 C280 40 270 30 256 30Z"/>
+    <path class="sk w" d="M50 62 H230 V182 H50Z"/>
+    <circle class="sk w" cx="110" cy="14" r="12"/><circle class="tinta" cx="113" cy="16" r="4.5"/><circle class="sk w" cx="170" cy="14" r="12"/><circle class="tinta" cx="173" cy="16" r="4.5"/>
+    <path class="sk w" d="M-22 92 H0 V132 H-22Z M280 92 H302 V132 H280Z"/>
+    <path class="sk fino" d="M96 198 H184 V210 H96Z"/><circle class="sk fino" cx="262" cy="46" r="3"/>
+    <path class="sk" d="M30 220 V234 M250 220 V234"/>
+  </g>
+  <g id="palanca"><!-- palanca; origen = centro de la base; pomo en (17,-67) -->
+    <path class="sk w" d="M-24 0 A24 24 0 0 1 24 0Z"/><path class="sk" d="M0 -8 L16 -62"/><circle class="sk w" cx="17" cy="-67" r="8"/>
+  </g>
+  <g id="manivela"><!-- manivela; origen = eje; el bichito agarra en (36,30) -->
+    <circle class="sk w" cx="0" cy="0" r="14"/><circle class="tinta" cx="0" cy="0" r="4"/><path class="sk gordo" d="M0 0 L30 26"/><path class="sk w" d="M28 24 l14 12 l-6 6 l-14 -12Z"/>
+  </g>
+  <g id="lupa"><!-- lupa; origen = centro de la lente r=28 -->
+    <circle class="sk w" cx="0" cy="0" r="28"/><path class="sk gordo" d="M20 20 L50 50"/><path class="sk fino" d="M-14 -10 a16 16 0 0 1 10 -10"/>
+  </g>
+  <g id="puerta"><!-- puerta de arco abierta; origen = abajo-izquierda; 110×130 -->
+    <path class="sk w" d="M0 0 V-90 C0 -128 70 -128 70 -90 V0Z"/><path class="tinta" d="M8 0 V-88 C8 -116 62 -116 62 -88 V0Z"/>
+    <path class="sk w" d="M62 0 L62 -92 C70 -120 100 -116 104 -96 L104 6Z"/><circle class="sk fino" cx="94" cy="-46" r="3"/>
+    <path class="sk" d="M-10 0 H82 M-4 -1 V8 H76 V-1"/>
+  </g>
+  <g id="buzon"><!-- buzón con bandera; origen = pie -->
+    <path class="sk" d="M0 0 V-46"/><path class="sk w" d="M-22 -46 V-70 C-22 -84 22 -84 22 -70 V-46Z"/><path class="tinta" d="M-14 -58 H-4 V-50 H-14Z"/>
+    <path class="sk" d="M24 -60 V-86"/><path class="sk red w" d="M24 -86 H36 L32 -81 L36 -76 H24"/>
+  </g>
+  <g id="cajonera"><!-- archivador de 3 cajones, 110×170; rótulos en (55,40) (55,95) (55,146) -->
+    <path class="sk w" d="M0 0 H110 V170 H0Z"/><path class="sk" d="M8 10 H102 V62 H8Z M8 66 H102 V118 H8Z M8 122 H102 V164 H8Z"/>
+    <path class="sk fino" d="M44 52 H66 M44 108 H66 M44 156 H66"/>
+  </g>
+  <g id="cajon-abierto"><!-- cajón sacado con fichas dentro, 110×74; origen arriba-izquierda -->
+    <path class="sk w" d="M10 20 L14 -8 H34 L30 20 M30 20 L36 -14 H56 L50 20 M52 20 L58 -4 H78 L72 20"/><path class="sk w" d="M0 20 H110 V60 H0Z"/><path class="sk fino" d="M44 44 H66"/>
+  </g>
+  <g id="movil"><!-- móvil, 90×170; pantalla (10,20)-(80,146) -->
+    <rect class="sk w" x="0" y="0" width="90" height="170" rx="14"/><path class="sk fino" d="M10 20 H80 V146 H10Z M36 158 H54"/>
+  </g>
+  <g id="portatil"><!-- portátil abierto, 186×108; pantalla (16,10)-(154,82) -->
+    <path class="sk w" d="M8 0 H162 V92 H8Z"/><path class="sk fino" d="M16 10 H154 V82 H16Z"/><path class="sk w" d="M-8 92 H178 L170 108 H0Z"/>
+  </g>
+  <g id="bombilla"><!-- bombilla; origen = rosca abajo -->
+    <path class="sk w" d="M-10 0 V-12 C-24 -22 -28 -50 0 -54 C28 -50 24 -22 10 -12 V0Z"/><path class="sk fino" d="M-10 -4 H10 M-6 -16 L-4 -34 L4 -28 L6 -16"/>
+  </g>
+  <g id="engranaje"><!-- rueda dentada r≈38; origen = centro -->
+    <path class="sk w" d="M-6 -38 H6 L8 -30 L17 -26 L24 -32 L32 -24 L26 -17 L30 -8 L38 -6 V6 L30 8 L26 17 L32 24 L24 32 L17 26 L8 30 L6 38 H-6 L-8 30 L-17 26 L-24 32 L-32 24 L-26 17 L-30 8 L-38 6 V-6 L-30 -8 L-26 -17 L-32 -24 L-24 -32 L-17 -26 L-8 -30Z"/>
+    <circle class="sk" cx="0" cy="0" r="9"/>
+  </g>
+  <g id="reloj"><!-- despertador (cron, launchd, horarios); origen = centro, r=30 -->
+    <circle class="sk w" cx="0" cy="0" r="30"/><path class="sk" d="M0 0 V-18 M0 0 L12 6"/><path class="sk w" d="M-30 -24 a12 12 0 0 1 16 -12 Z M30 -24 a12 12 0 0 0 -16 -12 Z"/><path class="sk" d="M-18 26 l-8 10 M18 26 l8 10"/>
+  </g>
+  <g id="llave"><!-- llave; origen = centro del ojo; 76 de largo -->
+    <circle class="sk w" cx="0" cy="0" r="14"/><path class="sk" d="M14 0 H62 M44 0 V10 M54 0 V8"/><circle class="tinta" cx="0" cy="0" r="4"/>
+  </g>
+  <g id="candado"><!-- candado; origen = abajo-centro -->
+    <path class="sk" d="M-14 -40 V-54 C-14 -72 14 -72 14 -54 V-40"/><path class="sk w" d="M-24 0 V-40 H24 V0Z"/><circle class="tinta" cx="0" cy="-22" r="4"/><path class="sk fino" d="M0 -20 V-10"/>
+  </g>
+  <g id="balanza"><!-- balanza de platillos; origen = base; platillos en (-80,-56) y (80,-68) -->
+    <path class="sk" d="M0 0 V-106 M-24 0 H24 M-80 -100 L80 -112"/>
+    <path class="sk" d="M-80 -100 L-100 -60 M-80 -100 L-60 -60 M80 -112 L60 -72 M80 -112 L100 -72"/>
+    <path class="sk w" d="M-104 -60 H-56 C-60 -48 -100 -48 -104 -60Z M56 -72 H104 C100 -60 60 -60 56 -72Z"/>
+  </g>
+  <g id="mapa"><!-- mapa plegado con ruta; 160×110 -->
+    <path class="sk w" d="M0 10 L52 0 L106 10 L160 0 V100 L106 110 L52 100 L0 110Z"/><path class="sk fino" d="M52 0 V100 M106 10 V110"/>
+    <path class="sk or dash fino" d="M18 84 C40 60 70 80 90 50 C110 24 130 40 142 26"/>
+  </g>
+  <g id="pin"><!-- chincheta de mapa; origen = punta -->
+    <path class="sk red w" d="M0 0 C-4 -12 -16 -22 -16 -34 A16 16 0 0 1 16 -34 C16 -22 4 -12 0 0Z"/><circle class="sk red" cx="0" cy="-34" r="5"/>
+  </g>
+  <g id="trompetilla"><!-- trompetilla para oír (transcribir/escuchar); origen = boquilla; abre a la derecha ~110 -->
+    <path class="sk w" d="M0 -4 C30 -6 60 -24 100 -46 C108 -20 108 20 100 46 C60 24 30 6 0 4Z"/><ellipse class="sk w" cx="102" cy="0" rx="8" ry="46"/>
+  </g>
+  <g id="ojo"><!-- ojo gigante (mirar/visión); origen = centro; 120×80 -->
+    <path class="sk w" d="M-60 0 C-30 -40 30 -40 60 0 C30 40 -30 40 -60 0Z"/><circle class="sk" cx="0" cy="0" r="20"/><circle class="tinta" cx="4" cy="2" r="9"/>
+  </g>
+  <g id="tijeras"><!-- tijeras abiertas; origen = eje -->
+    <path class="sk" d="M0 0 L60 -16 M0 0 L60 16"/><circle class="sk w" cx="-16" cy="-12" r="10"/><circle class="sk w" cx="-16" cy="12" r="10"/><path class="sk" d="M-8 -6 L0 0 L-8 6"/>
+  </g>
+  <g id="sello"><!-- sello de tampón; origen = base de la goma; mango arriba en (0,-44) -->
+    <path class="sk w" d="M-26 0 V-12 H26 V0Z"/><path class="sk w" d="M-8 -12 V-36 H8 V-12"/><ellipse class="sk w" cx="0" cy="-44" rx="16" ry="9"/>
+  </g>
+  <g id="taburete"><!-- taburete; origen = centro del asiento -->
+    <path class="sk w" d="M-36 0 H36 V8 H-36Z"/><path class="sk" d="M-30 8 L-36 48 M30 8 L36 48 M-14 8 L-12 44 M14 8 L12 44"/>
+  </g>
+  <g id="cubo"><!-- cubo; origen = centro de la boca -->
+    <path class="sk fino" d="M-34 0 C-30 -40 30 -40 34 0"/><path class="sk w" d="M-34 0 L-26 56 C-20 62 20 62 26 56 L34 0"/><ellipse class="sk w" cx="0" cy="0" rx="34" ry="9"/>
+  </g>
+  <g id="tubo"><!-- tubería en codo; origen = boca de entrada a la izquierda; sale abajo en (100,90) -->
+    <path class="sk w" d="M0 -12 H80 C100 -12 112 0 112 20 V90 H88 V24 C88 16 84 12 76 12 H0Z"/><path class="sk" d="M0 -16 V16 M84 90 H116"/>
+  </g>
+  <g id="escalera"><!-- escalera de mano, 64×150; origen = pie izquierdo -->
+    <path class="sk" d="M0 0 L14 -150 M50 0 L64 -150 M4 -30 H54 M7 -60 H57 M10 -90 H60 M13 -120 H63"/>
+  </g>
+  <g id="red"><!-- red de cazar mariposas; origen = mano en el mango -->
+    <path class="sk" d="M0 0 L70 -70"/><ellipse class="sk w" cx="88" cy="-88" rx="26" ry="20" transform="rotate(-45 88 -88)"/><path class="sk fino" d="M76 -70 C90 -40 120 -60 106 -100"/>
+  </g>
+</defs>
+</svg>
+
+<div class="wrap">
+
+<header>
+  <div>
+    <h1>CAPM Explainer<br><em>nativa, por dentro</em></h1>
+    <p>La web que explicaba el CAPM paso a paso ahora es una app de iPhone y de Mac que calcula en el aparato. La matemática vive en un paquete Swift (CAPMKit) probado contra los números del Python: KO sale 5,18 % en los dos.</p>
+    <p class="meta">9 ficheros Swift · 852 líneas · 12 tests · 177 filas de fixture · leído el 11/10/2026 por la noche</p>
+  </div>
+  <svg viewBox="0 0 640 420" role="img" aria-label="El bichito pesa una acción contra el mercado en una balanza; la beta es lo que marca">
+    <use href="#balanza" x="330" y="370"/>
+    <g transform="translate(236 300) scale(.55)"><use href="#tarjeta" x="-65" y="-64"/></g>
+    <text x="236" y="296" class="p" text-anchor="middle">KO</text>
+    <g transform="translate(412 292) scale(.55)"><use href="#pila" x="-35" y="-50"/></g>
+    <text x="414" y="288" class="p" text-anchor="middle">mercado</text>
+    <text x="330" y="240" class="g or" text-anchor="middle">β</text>
+    <use href="#xh" x="150" y="370"/>
+    <path class="brazo" d="M178 318 C200 300 220 296 246 290"/><use href="#mano" x="246" y="290"/>
+    <path class="sk fino" d="M90 372 C200 376 480 368 560 372"/>
+  </svg>
+</header>
+
+<ol class="indice">
+  <li><a href="#l1">Las piezas: comedor, cocina y proveedor</a><small>la app enseña, CAPMKit calcula, Yahoo trae los ingredientes</small></li>
+  <li><a href="#l2">Una ventanilla, cuatro recados</a><small>precios, dividendos, bono y buscador sin librería ni clave</small></li>
+  <li><a href="#l3">La cremallera de meses</a><small>fuera la barra repetida y cada mes de la acción con su mes del mercado</small></li>
+  <li><a href="#l4">La beta es una cuesta</a><small>la recta que mejor une mercado y acción; su inclinación es β</small></li>
+  <li><a href="#l5">El embudo y la olla</a><small>Gordon fabrica E[Rm]; la fórmula CAPM lo cocina todo</small></li>
+  <li><a href="#l6">Un viaje: «Repsol»</a><small>de teclear un nombre a ver 2,58 % en pantalla</small></li>
+  <li><a href="#l7">Una fila de verdad: junio de 2023</a><small>cómo un mes se convierte en un punto de la gráfica</small></li>
+  <li><a href="#l8">Cómo se construyó esta noche</a><small>los peldaños y los que se rompieron</small></li>
+  <li><a href="#l9">Dónde tocar si se rompe</a><small>cuatro cajones y una lupa</small></li>
+</ol>
+
+<!-- ═══════════ 1 PIEZAS ═══════════ -->
+<section class="lamina" id="l1">
+  <div class="num">LÁMINA 01 · PIEZAS</div>
+  <h2>Un comedor, una cocina y un proveedor</h2>
+  <p class="idea">La app de SwiftUI es el comedor donde se sirve el plato paso a paso; CAPMKit es la cocina que calcula; Yahoo es el proveedor que deja los ingredientes en la puerta de atrás.</p>
+  <svg class="dib" viewBox="40 140 1120 440" role="img" aria-label="El bichito cocina dentro de una máquina (CAPMKit); a la izquierda un portátil y un móvil reciben el plato; a la derecha una puerta por la que entran sobres de Yahoo">
+    <path class="sk fino" d="M80 436 C400 441 800 431 1120 436"/>
+    <use href="#portatil" x="120" y="328"/>
+    <use href="#movil" x="330" y="266"/>
+    <text x="250" y="480" class="p" text-anchor="middle">la app · el comedor</text>
+    <text x="250" y="506" class="code" text-anchor="middle">App/ContentView.swift</text>
+    <g transform="translate(460 200)"><use href="#maquina"/></g>
+    <use href="#xh-bajo" x="600" y="378"/>
+    <path class="brazo" d="M571 348 C556 356 548 366 544 376"/><use href="#mano" x="544" y="376"/>
+    <path class="brazo" d="M631 348 C646 346 656 342 664 338"/><use href="#pancarta" x="664" y="338"/>
+    <text x="664" y="300" class="g" text-anchor="middle">β</text>
+    <text x="600" y="176" class="g" text-anchor="middle">CAPMKit · la cocina</text>
+    <path class="sk or" marker-end="url(#ah-or)" d="M436 312 C400 320 360 330 318 346"/>
+    <text x="400" y="296" class="p or" text-anchor="middle">el plato</text>
+    <g transform="translate(900 420)"><use href="#puerta"/></g>
+    <use href="#sobre" x="796" y="282"/>
+    <use href="#sobre" x="830" y="300"/>
+    <path class="sk or" marker-end="url(#ah-or)" d="M900 350 C860 340 820 330 766 316"/>
+    <text x="960" y="480" class="p" text-anchor="middle">Yahoo · el proveedor</text>
+    <text x="960" y="506" class="code" text-anchor="middle">CAPMKit/Sources/CAPMKit/Yahoo.swift</text>
+    <use href="#pila" x="640" y="470"/>
+    <use href="#sello" x="690" y="470"/>
+    <text x="760" y="548" class="p">tests contra el Python</text>
+  </svg>
+  <div class="ficha">
+    <div class="llano">
+      <h3>En cristiano</h3>
+      <p>Tecleas «KO» en el comedor (la app). La cocina (CAPMKit) pide a Yahoo precios, dividendos y el bono, calcula la beta y el retorno esperado, y devuelve un plato con todos los números. El comedor lo sirve en diez tarjetas que van apareciendo.</p>
+      <p>La cocina no sabe nada de pantallas, y por eso se puede probar sola: los 12 tests le dan los mismos ingredientes que al Python y comprueban que salga el mismo plato.</p>
+    </div>
+    <div>
+      <table>
+        <thead><tr><th>En el dibujo</th><th>Qué hace</th><th>Dónde</th></tr></thead>
+        <tbody>
+          <tr><td>el comedor</td><td>la pantalla única, igual en iPhone y Mac (SwiftUI, un solo código)</td><td><span class="ref">apple/App/ContentView.swift:49</span></td></tr>
+          <tr><td>la máquina</td><td>la matemática portada línea a línea de capm.py (paquete Swift CAPMKit)</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/CAPM.swift:53</span></td></tr>
+          <tr><td>el cocinero</td><td>el orquestador que pide datos y monta el resultado (Analyzer)</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/CAPM.swift:118</span></td></tr>
+          <tr><td>la puerta</td><td>las llamadas a Yahoo con URLSession, sin librería (YahooClient)</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/Yahoo.swift:4</span></td></tr>
+          <tr><td>la pila sellada</td><td>12 tests con los números del Python como referencia (Swift Testing)</td><td><span class="ref">apple/CAPMKit/Tests/CAPMKitTests/CAPMKitTests.swift:22</span></td></tr>
+          <tr><td>el plano</td><td>proyecto Xcode generado, destinos iPhone y Mac, bundle com.nachosanbenito.capm (xcodegen)</td><td><span class="ref">apple/project.yml:10</span></td></tr>
+        </tbody>
+      </table>
+      <p class="dato"><b>Dato real:</b> 852 líneas de Swift en total: 214 de cocina, 455 de comedor, 146 de tests. El Python original tiene 174.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 2 YAHOO ═══════════ -->
+<section class="lamina" id="l2">
+  <div class="num">LÁMINA 02 · ETAPA</div>
+  <h2>Una ventanilla, cuatro recados</h2>
+  <p class="idea">yfinance ya no está: la app va a la misma ventanilla gratis de Yahoo y pide cuatro sobres (precios de 5 años, dividendos de 12 meses, bono a 10 años y buscador), sin clave y sin pagar.</p>
+  <svg class="dib" viewBox="80 160 1000 340" role="img" aria-label="El bichito recoge sobres en una ventanilla con el rótulo Yahoo">
+    <path class="sk w" d="M560 180 H900 V440 H560Z"/>
+    <path class="sk w" d="M630 230 H830 V370 H630Z"/>
+    <path class="tinta" d="M636 236 H824 V364 H636Z"/>
+    <path class="sk w" d="M580 370 H910 V384 H580Z"/>
+    <text x="730" y="216" class="p" text-anchor="middle">YAHOO · query2.finance</text>
+    <use href="#sobre" x="596" y="318"/>
+    <use href="#sobre" x="672" y="318"/>
+    <use href="#sobre" x="748" y="318"/>
+    <use href="#sobre" x="824" y="318"/>
+    <text x="636" y="418" class="p" text-anchor="middle">precios 5 años</text>
+    <text x="712" y="444" class="p" text-anchor="middle">dividendos 12 m</text>
+    <text x="788" y="418" class="p" text-anchor="middle">bono ^TNX</text>
+    <text x="864" y="444" class="p" text-anchor="middle">buscador</text>
+    <use href="#xh" x="420" y="440"/>
+    <path class="brazo" d="M448 388 C490 372 540 358 592 348"/><use href="#mano" x="592" y="348"/>
+    <path class="brazo" d="M396 390 C386 404 384 418 388 430"/>
+    <text x="120" y="236" class="g">Una ventanilla,</text>
+    <text x="120" y="272" class="g">cuatro recados</text>
+    <text x="920" y="262" class="p red">429: espera un minuto</text>
+    <text x="730" y="478" class="code" text-anchor="middle">Yahoo.swift:37 · 45 · 52 · 57</text>
+    <path class="sk fino" d="M300 442 C500 446 800 438 1000 442"/>
+  </svg>
+  <div class="ficha">
+    <div class="llano">
+      <h3>En cristiano</h3>
+      <p>Antes el Python pedía a la librería yfinance «dame el histórico de KO» y ella hacía el recado. Ahora lo hace la app con cuatro direcciones web que responden JSON. Comprobado antes de escribir Swift: KO devuelve 61 barras mensuales, SPY cuatro dividendos, ^TNX 5,244 y «Repsol» → REP.MC.</p>
+      <p>La única diferencia con yfinance es el dividend yield: Yahoo publica el suyo y nosotros sumamos los dividendos de los últimos doce meses y dividimos por el precio. En SPY sale 0,97 % frente a 0,99 %.</p>
+    </div>
+    <div>
+      <table>
+        <thead><tr><th>En el dibujo</th><th>Qué hace</th><th>Dónde</th></tr></thead>
+        <tbody>
+          <tr><td>sobre 1</td><td>barras mensuales de 5 años con cierre ajustado, moneda, nombre y zona horaria (chart v8)</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/Yahoo.swift:37</span></td></tr>
+          <tr><td>sobre 2</td><td>dividendos del ETF del último año y precio actual → yield (events=div)</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/Yahoo.swift:45</span></td></tr>
+          <tr><td>sobre 3</td><td>bono USA a 10 años: ^TNX viene en % y se divide por 100</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/Yahoo.swift:52</span></td></tr>
+          <tr><td>sobre 4</td><td>buscador por nombre, solo acciones (quoteType EQUITY), máximo 8</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/Yahoo.swift:57</span></td></tr>
+          <tr><td>la ventanilla</td><td>una sola función que monta la URL, pone User-Agent y decodifica; un 404 de Yahoo llega como JSON con result nulo</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/Yahoo.swift:21</span></td></tr>
+          <tr><td>el aviso rojo</td><td>el 429 se convierte en un error con frase propia (rateLimited)</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/CAPM.swift:38</span></td></tr>
+        </tbody>
+      </table>
+      <p class="dato"><b>Dato real:</b> SPY, 11/10/2026: 4 dividendos que suman 7,583 $ sobre un precio de 778,57 $ → yield 0,97 %. yfinance decía 0,99 %.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 3 CREMALLERA ═══════════ -->
+<section class="lamina" id="l3">
+  <div class="num">LÁMINA 03 · ETAPA</div>
+  <h2>La cremallera de meses</h2>
+  <p class="idea">Yahoo manda dos tiras de barras (la acción y su índice); se corta la barra «en vivo» repetida del mes en curso y se cierra la cremallera mes a mes: solo cuentan los meses que están en las dos tiras.</p>
+  <svg class="dib" viewBox="100 170 1000 390" role="img" aria-label="Dos tiras de fichas mensuales se juntan en una cremallera que el bichito cierra; unas tijeras cortan la ficha repetida">
+    <text x="240" y="208" class="g">mes a mes, pareja a pareja</text>
+    <text x="150" y="258" class="p">KO</text>
+    <text x="150" y="388" class="p">^GSPC</text>
+    <path class="sk red dash" d="M188 230 h44 v44 h-44Z"/>
+    <g transform="translate(214 300) rotate(-90)"><use href="#tijeras"/></g>
+    <text x="150" y="330" class="p red">la repetida, fuera</text>
+    <g>
+      <path class="sk w" d="M240 230 h44 v44 h-44Z"/><path class="sk w" d="M292 230 h44 v44 h-44Z"/><path class="sk w" d="M344 230 h44 v44 h-44Z"/><path class="sk w" d="M396 230 h44 v44 h-44Z"/><path class="sk w" d="M448 230 h44 v44 h-44Z"/><path class="sk w" d="M500 230 h44 v44 h-44Z"/><path class="sk w" d="M552 230 h44 v44 h-44Z"/>
+      <path class="sk w" d="M240 360 h44 v44 h-44Z"/><path class="sk w" d="M292 360 h44 v44 h-44Z"/><path class="sk w" d="M344 360 h44 v44 h-44Z"/><path class="sk w" d="M396 360 h44 v44 h-44Z"/><path class="sk w" d="M448 360 h44 v44 h-44Z"/><path class="sk w" d="M500 360 h44 v44 h-44Z"/><path class="sk w" d="M552 360 h44 v44 h-44Z"/>
+    </g>
+    <path class="sk or" d="M598 252 L700 300 M598 382 L700 334"/>
+    <path class="sk w" d="M692 298 h20 a4 4 0 0 1 4 4 v30 a4 4 0 0 1 -4 4 h-20 a4 4 0 0 1 -4 -4 v-30 a4 4 0 0 1 4 -4Z"/><path class="sk fino" d="M702 336 V352"/>
+    <g>
+      <path class="sk w" d="M740 292 h36 v36 h-36Z"/><path class="sk w" d="M796 292 h36 v36 h-36Z"/><path class="sk w" d="M852 292 h36 v36 h-36Z"/><path class="sk w" d="M908 292 h36 v36 h-36Z"/><path class="sk w" d="M964 292 h36 v36 h-36Z"/>
+      <path class="sk w" d="M740 330 h36 v36 h-36Z"/><path class="sk w" d="M796 330 h36 v36 h-36Z"/><path class="sk w" d="M852 330 h36 v36 h-36Z"/><path class="sk w" d="M908 330 h36 v36 h-36Z"/><path class="sk w" d="M964 330 h36 v36 h-36Z"/>
+    </g>
+    <text x="870" y="262" class="p or" text-anchor="middle">59 parejas</text>
+    <use href="#xh" x="700" y="520"/>
+    <path class="brazo" d="M676 470 C680 440 690 400 696 356"/><use href="#mano" x="696" y="356"/>
+    <path class="brazo" d="M728 468 C724 440 714 400 708 356"/>
+    <text x="700" y="552" class="code" text-anchor="middle">CAPM.swift:81 · 88</text>
+  </svg>
+  <div class="ficha">
+    <div class="llano">
+      <h3>En cristiano</h3>
+      <p>Yahoo manda 61 barras de KO: una por mes y, de propina, una barra «en vivo» del mes en curso con la misma fecha de mes. yfinance la tira sin decirlo; aquí se tira igual: de cada mes se queda la primera barra. Con 61 barras salen 60 retornos; emparejados con el índice quedan 59, los mismos que el Python.</p>
+      <p>El mes se decide en la zona horaria de la bolsa (America/New_York para KO, Europe/Madrid para ITX.MC), que es lo que hace pandas al convertir a periodo mensual.</p>
+    </div>
+    <div>
+      <table>
+        <thead><tr><th>En el dibujo</th><th>Qué hace</th><th>Dónde</th></tr></thead>
+        <tbody>
+          <tr><td>las tijeras</td><td>una barra por mes y retorno = cierre ajustado / anterior − 1 (monthlyReturns)</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/CAPM.swift:81</span></td></tr>
+          <tr><td>la etiqueta del mes</td><td>«2026-10» calculado en la zona horaria de la bolsa (monthKey)</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/CAPM.swift:73</span></td></tr>
+          <tr><td>la cremallera</td><td>se quedan solo los meses presentes en las dos tiras (align, el inner join de pandas)</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/CAPM.swift:88</span></td></tr>
+          <tr><td>la prueba</td><td>el fixture fabrica barras con una repetida y un mes de más en el índice; el resultado tiene que ser igual al Python</td><td><span class="ref">apple/CAPMKit/Tests/CAPMKitTests/CAPMKitTests.swift:52</span></td></tr>
+        </tbody>
+      </table>
+      <p class="dato"><b>Dato real:</b> KO, barras crudas de Yahoo: «2026-10-01» y «2026-10-09 16:00» con el mismo cierre 88,05 $. Con el cierre ajustado y sin la repetida, la diferencia máxima con yfinance en 59 retornos es 0,0000003.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 4 LA CUESTA ═══════════ -->
+<section class="lamina" id="l4">
+  <div class="num">LÁMINA 04 · ETAPA</div>
+  <h2>La beta es una cuesta</h2>
+  <p class="idea">Cada mes es un punto: cuánto subió el mercado (a lo ancho) y cuánto subió la acción (a lo alto). La recta que mejor pasa entre los puntos es una cuesta, y su inclinación es la beta.</p>
+  <svg class="dib" viewBox="160 190 920 360" role="img" aria-label="El bichito sube por una rampa que atraviesa una nube de puntos; la inclinación de la rampa es la beta">
+    <path class="sk fino" d="M240 500 H1000 M240 500 V220"/>
+    <text x="1000" y="528" class="p mute" text-anchor="end">mercado, mes a mes</text>
+    <text x="232" y="214" class="p mute">acción</text>
+    <g class="sk fino">
+      <circle cx="300" cy="440" r="4"/><circle cx="330" cy="486" r="4"/><circle cx="360" cy="430" r="4"/><circle cx="395" cy="470" r="4"/><circle cx="420" cy="404" r="4"/><circle cx="450" cy="455" r="4"/><circle cx="470" cy="396" r="4"/><circle cx="505" cy="428" r="4"/><circle cx="530" cy="372" r="4"/><circle cx="560" cy="418" r="4"/><circle cx="590" cy="350" r="4"/><circle cx="640" cy="392" r="4"/><circle cx="660" cy="332" r="4"/><circle cx="700" cy="378" r="4"/><circle cx="730" cy="314" r="4"/><circle cx="760" cy="352" r="4"/><circle cx="800" cy="296" r="4"/><circle cx="830" cy="340" r="4"/><circle cx="860" cy="274" r="4"/><circle cx="900" cy="312" r="4"/><circle cx="930" cy="262" r="4"/><circle cx="960" cy="290" r="4"/><circle cx="380" cy="500" r="4"/><circle cx="840" cy="250" r="4"/>
+    </g>
+    <path class="sk or gordo" d="M260 480 L980 250"/>
+    <path class="sk or dash fino" d="M260 472 L980 452"/>
+    <text x="700" y="484" class="p or">Repsol: β 0,03 · R² 0 %</text>
+    <text x="820" y="236" class="p or">ITX: β 1,14 · R² 44 %</text>
+    <path class="sk fino" d="M340 480 A80 80 0 0 0 336 455"/>
+    <text x="356" y="466" class="p or">β = la inclinación</text>
+    <use href="#xh" x="600" y="372"/>
+    <path class="brazo" d="M628 320 C650 318 668 322 682 330"/>
+    <path class="sk w" d="M682 334 L730 334 L730 318Z"/>
+    <path class="brazo" d="M576 322 C566 334 562 346 566 356"/>
+    <text x="300" y="262" class="g">cada punto, un mes</text>
+    <text x="300" y="292" class="code">CAPM.swift:65 · BetaChart.swift:34</text>
+  </svg>
+  <div class="ficha">
+    <div class="llano">
+      <h3>En cristiano</h3>
+      <p>Si el mercado sube un 1 % y la acción suele subir un 1,14 %, la cuesta es empinada: β = 1,14 (Inditex). Si la acción va a su bola, la recta sale casi plana y la nube no la sigue: Repsol da β = 0,03 con R² = 0 %, y la app lo dice en rojo en vez de dar el número por bueno.</p>
+      <p>La fórmula es la de la pendiente de mínimos cuadrados: covarianza entre acción y mercado dividida por la varianza del mercado. Es la misma línea que np.cov en el Python, y por eso el test exige igualdad hasta la novena cifra.</p>
+    </div>
+    <div>
+      <table>
+        <thead><tr><th>En el dibujo</th><th>Qué hace</th><th>Dónde</th></tr></thead>
+        <tbody>
+          <tr><td>la cuesta</td><td>β = Cov(Rᵢ,Rₘ)/Var(Rₘ) y la correlación, en una pasada (regression)</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/CAPM.swift:65</span></td></tr>
+          <tr><td>la rampa dibujada</td><td>la recta y = α + βx sobre la nube de puntos (LineMark de Swift Charts)</td><td><span class="ref">apple/App/BetaChart.swift:34</span></td></tr>
+          <tr><td>el punto que tocas</td><td>al tocar la gráfica se busca el mes más cercano y se enseña su cifra (chartXSelection)</td><td><span class="ref">apple/App/BetaChart.swift:16</span></td></tr>
+          <tr><td>el rojo</td><td>aviso cuando hay menos de 24 meses o la correlación no llega a 0,15 (warnings)</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/CAPM.swift:99</span></td></tr>
+        </tbody>
+      </table>
+      <p class="dato"><b>Dato real:</b> fixture del 11/10/2026: KO β 0,2851 (R² 7,8 %), ITX.MC β 1,1375 (R² 44,5 %), SHEL.L β 0,638 (R² 8,7 %). Los tres pasan con tolerancia 10⁻⁹.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 5 EMBUDO Y OLLA ═══════════ -->
+<section class="lamina" id="l5">
+  <div class="num">LÁMINA 05 · ETAPA</div>
+  <h2>El embudo de Gordon y la olla CAPM</h2>
+  <p class="idea">El retorno esperado del mercado no es un dato: se fabrica en un embudo con dos ingredientes (dividendos y crecimiento). Lo que sale va a la olla con el bono y la beta, y de la olla sale el plato: E[R].</p>
+  <svg class="dib" viewBox="220 130 900 400" role="img" aria-label="Dos ingredientes caen en un embudo, el cubo recoge E[Rm] y el bichito remueve una olla de la que sale el resultado">
+    <text x="420" y="168" class="g" text-anchor="middle">dos ingredientes</text>
+    <g transform="translate(372 196)"><circle class="sk w" cx="0" cy="0" r="18"/><text x="0" y="7" class="p" text-anchor="middle">D/P</text></g>
+    <g transform="translate(468 190)"><circle class="sk w" cx="0" cy="0" r="18"/><text x="0" y="7" class="p" text-anchor="middle">g</text></g>
+    <path class="sk fino" d="M372 218 V236 M468 212 V232"/>
+    <g transform="translate(420 250)"><use href="#embudo"/></g>
+    <use href="#cubo" x="420" y="392"/>
+    <text x="420" y="486" class="p or" text-anchor="middle">sale E[Rm] = 5,01 %</text>
+    <path class="sk or" marker-end="url(#ah-or)" d="M470 420 C560 420 620 400 690 370"/>
+    <path class="sk w" d="M700 300 H880 V400 C880 420 860 430 840 430 H740 C720 430 700 420 700 400Z"/>
+    <ellipse class="sk w" cx="790" cy="300" rx="90" ry="16"/>
+    <path class="sk" d="M700 330 H676 M880 330 H904"/>
+    <text x="790" y="266" class="p" text-anchor="middle">la olla CAPM</text>
+    <text x="792" y="372" class="p" text-anchor="middle">Rf + β · (E[Rm] − Rf)</text>
+    <use href="#xh" x="630" y="470"/>
+    <path class="brazo" d="M658 418 C690 390 720 350 760 300"/><use href="#mano" x="760" y="300"/>
+    <path class="sk" d="M756 304 L790 262"/>
+    <path class="brazo" d="M606 420 C596 432 592 444 596 456"/>
+    <path class="sk or" marker-end="url(#ah-or)" d="M900 366 C940 360 960 356 990 352"/>
+    <ellipse class="sk w" cx="1040" cy="372" rx="54" ry="12"/>
+    <text x="1040" y="350" class="g red" text-anchor="middle">5,18 %</text>
+    <text x="1040" y="408" class="p mute" text-anchor="middle">KO · 11/10/2026</text>
+    <text x="800" y="500" class="code" text-anchor="middle">CAPM.swift:62 · 61</text>
+    <path class="sk fino" d="M300 472 C500 476 900 470 1100 474"/>
+  </svg>
+  <div class="ficha">
+    <div class="llano">
+      <h3>En cristiano</h3>
+      <p>Para KO el 11/10/2026: el ETF SPY reparte un 0,97 % en dividendos y suponemos que crece un 4 % al año. Gordon dice E[Rm] = 0,0097 × 1,04 + 0,04 = 5,01 %. El bono USA a 10 años da 5,24 %, así que la prima de mercado sale negativa (−0,23 %): con la beta 0,285, E[R] = 5,24 % + 0,285 × (−0,23 %) = 5,18 %. Por debajo del bono, y la app lo avisa.</p>
+      <p>Para EUR y GBP el bono es un número fijo editable (2,5 % y 4,5 %), porque Yahoo no publica el Bund ni el Gilt.</p>
+    </div>
+    <div>
+      <table>
+        <thead><tr><th>En el dibujo</th><th>Qué hace</th><th>Dónde</th></tr></thead>
+        <tbody>
+          <tr><td>el embudo</td><td>E[Rm] = D/P · (1 + g) + g (modelo de Gordon)</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/CAPM.swift:62</span></td></tr>
+          <tr><td>la olla</td><td>E[R] = Rf + β · (E[Rm] − Rf) (fórmula CAPM)</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/CAPM.swift:61</span></td></tr>
+          <tr><td>D/P</td><td>dividendos de los últimos 365 días entre el precio (trailingYield)</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/CAPM.swift:94</span></td></tr>
+          <tr><td>las perillas</td><td>índice, ETF, bono fijo y g por moneda, copiadas de capm.py; GBp (peniques) comparte las de GBP</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/CAPM.swift:54</span></td></tr>
+          <tr><td>Rf y g a mano</td><td>los dos campos opcionales de la barra, en %, sobrescriben la perilla</td><td><span class="ref">apple/App/ContentView.swift:31</span></td></tr>
+        </tbody>
+      </table>
+      <p class="dato"><b>Dato real:</b> la app en el Mac dio KO 5,18 % e ITX.MC 6,10 %; el Python, 5,18 % y 6,06 %. La diferencia de Inditex viene del dividend yield (2,58 % sumando dividendos frente a 2,55 % de Yahoo) y entra en la tolerancia del test en vivo.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 6 VIAJE ═══════════ -->
+<section class="lamina" id="l6">
+  <div class="num">LÁMINA 06 · VIAJE</div>
+  <h2>Un viaje: tecleas «Repsol»</h2>
+  <p class="idea">De un nombre escrito en el iPhone a ver 2,58 % en pantalla, con una parada extra porque «Repsol» no es un ticker.</p>
+  <svg class="dib" viewBox="80 200 1060 300" role="img" aria-label="Un camino naranja con seis paradas numeradas va de un móvil a un cartel con el resultado; el bichito camina por él con una hoja">
+    <use href="#movil" x="110" y="250"/>
+    <path class="sk or" d="M160 430 Q 250 330 330 330 T 480 380 T 650 440 T 820 340 T 1000 300 T 1040 350"/>
+    <g>
+      <circle class="sk w" cx="160" cy="430" r="9"/><circle class="tinta" cx="160" cy="430" r="3"/>
+      <circle class="sk w" cx="330" cy="330" r="9"/><circle class="tinta" cx="330" cy="330" r="3"/>
+      <circle class="sk w" cx="480" cy="380" r="9"/><circle class="tinta" cx="480" cy="380" r="3"/>
+      <circle class="sk w" cx="650" cy="440" r="9"/><circle class="tinta" cx="650" cy="440" r="3"/>
+      <circle class="sk w" cx="820" cy="340" r="9"/><circle class="tinta" cx="820" cy="340" r="3"/>
+      <circle class="sk w" cx="1000" cy="300" r="9"/><circle class="tinta" cx="1000" cy="300" r="3"/>
+    </g>
+    <text x="200" y="470" class="p">tecleas y Enter</text>
+    <text x="330" y="300" class="p" text-anchor="middle">¿ticker exacto? no</text>
+    <text x="480" y="420" class="p" text-anchor="middle">buscador → REP.MC</text>
+    <text x="480" y="440" class="code" text-anchor="middle">Yahoo.swift:57</text>
+    <text x="650" y="480" class="p" text-anchor="middle">a la cocina</text>
+    <text x="650" y="498" class="code" text-anchor="middle">CAPM.swift:122</text>
+    <text x="840" y="306" class="p">diez tarjetas, una a una</text>
+    <g transform="translate(1080 430)"><use href="#cartel"/></g>
+    <text x="1080" y="358" class="g red" text-anchor="middle">2,58 %</text>
+    <use href="#xh" x="735" y="396"/>
+    <path class="brazo" d="M763 344 C772 350 778 356 782 362"/><use href="#mano" x="782" y="362"/>
+    <use href="#hoja" x="784" y="340"/>
+    <path class="brazo" d="M711 346 C702 358 700 368 704 378"/>
+  </svg>
+  <div class="ficha">
+    <div class="llano">
+      <h3>En cristiano</h3>
+      <p>1) Escribes «Repsol» y pulsas Enter: se baja el teclado y arranca el cálculo. 2) La cocina prueba «Repsol» como ticker y Yahoo contesta que no existe. 3) Pregunta al buscador, que devuelve REP.MC, REPYY, REP.VI… y prueba el primero que funcione en un mercado soportado. 4) Con REP.MC pide índice, bono y dividendos, y calcula. 5) El comedor va enseñando las tarjetas con el mismo ritmo que la web (1,1 s, 1,6 s, 1,3 s…). 6) Resultado: 2,58 %, con el aviso rojo de beta poco fiable.</p>
+    </div>
+    <div>
+      <table>
+        <thead><tr><th>Parada</th><th>Qué hace</th><th>Dónde</th></tr></thead>
+        <tbody>
+          <tr><td>1 · tecleas</td><td>baja el teclado y lanza el cálculo (go); también entra por capm://Repsol</td><td><span class="ref">apple/App/ContentView.swift:89</span></td></tr>
+          <tr><td>2 · ¿ticker?</td><td>primero el texto tal cual; si falla con un error del modelo, pasa al buscador (analyze)</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/CAPM.swift:143</span></td></tr>
+          <tr><td>3 · buscador</td><td>candidatos de Yahoo, solo acciones; se recuerda de dónde vino (resolvedFrom)</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/Yahoo.swift:57</span></td></tr>
+          <tr><td>4 · cocina</td><td>moneda → perillas → bono → índice → cremallera → beta → dividendos → plato (capm)</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/CAPM.swift:122</span></td></tr>
+          <tr><td>5 · tarjetas</td><td>la lista de pasos con sus esperas; con «reducir movimiento» todo de golpe (steps, go)</td><td><span class="ref">apple/App/ContentView.swift:19</span></td></tr>
+          <tr><td>6 · resultado</td><td>la tarjeta grande con la frase de interpretación (case .result)</td><td><span class="ref">apple/App/ContentView.swift:216</span></td></tr>
+        </tbody>
+      </table>
+      <p class="dato"><b>Dato real:</b> «Repsol» en el iPhone 17 del simulador, 11/10/2026 23:40: Repsol, S.A. · REP.MC (EUR) · β 0,027 · R² 0 % · E[R] 2,58 %. Buscaste “Repsol” → REP.MC.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 7 DATOS ═══════════ -->
+<section class="lamina" id="l7">
+  <div class="num">LÁMINA 07 · DATOS</div>
+  <h2>Una fila de verdad: junio de 2023</h2>
+  <p class="idea">No hay base de datos: el único dato que viaja es la pareja de un mes. Esta es la de Inditex en junio de 2023, sellada campo a campo hasta ser un punto en la gráfica.</p>
+  <svg class="dib" viewBox="200 150 900 380" role="img" aria-label="El bichito estampa un sello sobre una ficha con los tres campos de un mes; arriba, el camino de la ficha desde la barra de Yahoo hasta el punto de la gráfica">
+    <text x="300" y="196" class="p or">barra de Yahoo</text>
+    <path class="sk or" marker-end="url(#ah-or)" d="M452 190 H500"/>
+    <text x="510" y="196" class="p or">retorno del mes</text>
+    <path class="sk or" marker-end="url(#ah-or)" d="M676 190 H724"/>
+    <text x="734" y="196" class="p or">pareja con el índice</text>
+    <path class="sk or" marker-end="url(#ah-or)" d="M940 190 H988"/>
+    <text x="998" y="196" class="p or">punto</text>
+    <g transform="translate(420 230) scale(2.2)"><path class="sk w" d="M0 0 H130 V64 H0Z"/></g>
+    <text x="444" y="274" class="p">mes · 2023-06</text>
+    <text x="444" y="312" class="p">ITX.MC · +13,3 %</text>
+    <text x="444" y="350" class="p">^STOXX50E · +4,3 %</text>
+    <text x="444" y="396" class="code">MonthlyReturn · CAPM.swift:4</text>
+    <g transform="translate(660 330)"><use href="#sello"/></g>
+    <path class="sk red fino" d="M632 336 C650 332 670 332 690 336"/>
+    <use href="#xh" x="820" y="470"/>
+    <path class="brazo" d="M796 420 C750 400 700 340 664 290"/><use href="#mano" x="664" y="290"/>
+    <path class="brazo" d="M848 418 C860 428 866 440 864 452"/>
+    <g transform="translate(960 250)">
+      <path class="sk fino" d="M0 90 H120 M0 90 V0"/>
+      <path class="sk or fino" d="M8 78 L112 18"/>
+      <circle class="sk fino" cx="34" cy="70" r="3"/><circle class="sk fino" cx="58" cy="52" r="3"/><circle class="sk fino" cx="90" cy="40" r="3"/>
+      <circle class="tinta" cx="74" cy="24" r="5"/>
+    </g>
+    <text x="1020" y="366" class="p" text-anchor="middle">jun 2023</text>
+    <text x="1020" y="390" class="code" text-anchor="middle">BetaChart.swift:16</text>
+    <path class="sk fino" d="M300 472 C500 476 900 470 1080 474"/>
+  </svg>
+  <div class="ficha">
+    <div class="llano">
+      <h3>En cristiano</h3>
+      <p>Yahoo manda para junio de 2023 un cierre ajustado de Inditex y otro del Euro Stoxx 50. Dividiendo cada uno por el de mayo salen dos retornos: +13,3 % y +4,3 %. Como los dos meses existen en las dos tiras, forman pareja: esa pareja es una fila MonthlyReturn. Cincuenta y nueve filas así son la nube de la gráfica, y al tocar cerca de +4,3 % en el eje del mercado, la app enseña esta.</p>
+    </div>
+    <div>
+      <table>
+        <thead><tr><th>En el dibujo</th><th>Qué hace</th><th>Dónde</th></tr></thead>
+        <tbody>
+          <tr><td>la ficha</td><td>mes, retorno de la acción y retorno del mercado; su id es el mes (MonthlyReturn)</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/CAPM.swift:4</span></td></tr>
+          <tr><td>sello 1 · barra</td><td>fecha y cierre ajustado tal como llegan de Yahoo (Bar)</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/CAPM.swift:13</span></td></tr>
+          <tr><td>sello 2 · retorno</td><td>cierre / anterior − 1, una barra por mes</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/CAPM.swift:81</span></td></tr>
+          <tr><td>sello 3 · pareja</td><td>se junta con el retorno del índice del mismo mes</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/CAPM.swift:88</span></td></tr>
+          <tr><td>el punto</td><td>un PointMark por fila; el mes más cercano al toque se resalta en oro</td><td><span class="ref">apple/App/BetaChart.swift:16</span></td></tr>
+          <tr><td>la misma fila en el Python</td><td>el fixture guarda las 59 parejas tal como salen de pandas, para comparar</td><td><span class="ref">apple/CAPMKit/Tests/fixtures.py:7</span></td></tr>
+        </tbody>
+      </table>
+      <p class="dato"><b>Dato real:</b> fixture ITX.MC, mes «2023-06»: stock 0,13327, market 0,04292. KO ese mismo mes: stock 0,01707, market 0,06473.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 8 HISTORIA ═══════════ -->
+<section class="lamina" id="l8">
+  <div class="num">LÁMINA 08 · HISTORIA</div>
+  <h2>Cómo se construyó esta noche</h2>
+  <p class="idea">Una escalera de ocho peldaños subida entre las 23:00 y las 23:50 del 11/10/2026; tres se rompieron por el camino y el último está pendiente de ti.</p>
+  <svg class="dib" viewBox="250 110 720 460" role="img" aria-label="El bichito sube una escalera con ocho peldaños; tres están agrietados en rojo y el último lleva un aviso">
+    <path class="sk" d="M520 550 L560 150 M640 550 L680 150"/>
+    <path class="sk" d="M526 500 H646 M530 450 H650 M534 400 H654 M538 350 H658 M542 300 H662 M546 250 H666 M550 200 H670"/>
+    <path class="sk red fino" d="M560 400 l8 6 l-6 6 l10 4 M600 300 l8 6 l-6 6 l10 4 M580 200 l8 6 l-6 6 l10 4"/>
+    <text x="500" y="506" class="p" text-anchor="end">fixtures del Python · 177 filas</text>
+    <text x="680" y="456" class="p">12 tests en verde · 23:27</text>
+    <text x="500" y="406" class="p red" text-anchor="end">@Observable no admite tres en una línea</text>
+    <text x="680" y="356" class="p">capm:// y argumento de arranque</text>
+    <text x="500" y="306" class="p red" text-anchor="end">el simulador era de otro chat</text>
+    <text x="680" y="256" class="p">.pkg firmado y notarizado · 23:48</text>
+    <text x="500" y="206" class="p red" text-anchor="end">la frase final salía en inglés: %@</text>
+    <text x="680" y="176" class="p red">TestFlight: falta tu ficha</text>
+    <use href="#alarma" x="600" y="164"/>
+    <use href="#xh" x="600" y="350"/>
+    <path class="brazo" d="M576 300 C572 285 568 268 566 252"/><use href="#mano" x="566" y="252"/>
+    <path class="brazo" d="M628 298 C632 283 636 266 638 252"/><use href="#mano" x="638" y="252"/>
+    <text x="330" y="150" class="g">ocho peldaños</text>
+    <path class="sk fino" d="M300 552 C500 556 800 548 940 552"/>
+  </svg>
+  <div class="ficha">
+    <div class="llano">
+      <h3>En cristiano</h3>
+      <p>Primero se sacaron los números del Python (tres empresas, 177 parejas) y se escribieron los tests antes que el código: fallaron, se escribió CAPMKit, pasaron. Luego la app: el primer intento no compilaba por tres variables en una línea, y luego por un «percent» ambiguo en los ejes de la gráfica.</p>
+      <p>Al probar en el iPhone apareció otra app en pantalla: el simulador lo estaba usando otro chat. Se arrancó un iPhone 17 aparte, sin panel, y para «teclear» sin teclado se añadió el enlace capm:// y el argumento de arranque. El .pkg se firmó, notarizó y Apple lo aceptó. La subida a TestFlight se paró porque la ficha de la app no existe aún en App Store Connect.</p>
+    </div>
+    <div>
+      <table>
+        <thead><tr><th>Peldaño</th><th>Qué pasó</th><th>Dónde</th></tr></thead>
+        <tbody>
+          <tr><td>1 · fixtures</td><td>script que vuelve a generar los números del Python cuando haga falta</td><td><span class="ref">apple/CAPMKit/Tests/fixtures.py:3</span></td></tr>
+          <tr><td>2 · tests</td><td>12 tests, incluido uno que llama a Yahoo de verdad y se salta sin red</td><td><span class="ref">apple/CAPMKit/Tests/CAPMKitTests/CAPMKitTests.swift:135</span></td></tr>
+          <tr><td>3 · roto</td><td>query, rfText y gText en tres líneas, como exige @Observable</td><td><span class="ref">apple/App/ContentView.swift:6</span></td></tr>
+          <tr><td>4 · capm://</td><td>el enlace propio y el argumento de arranque que usan las pruebas (open)</td><td><span class="ref">apple/App/ContentView.swift:82</span></td></tr>
+          <tr><td>5 · roto</td><td>la ventana de título del Mac tapaba el contenido: título oculto</td><td><span class="ref">apple/App/CAPMApp.swift:11</span></td></tr>
+          <tr><td>6 · sello</td><td>sandbox con red para que el .pkg se firme con runtime endurecido</td><td><span class="ref">apple/App/Mac.entitlements:4</span></td></tr>
+          <tr><td>7 · roto</td><td>las claves del catálogo con tres variables son %@ %@ %@, no %1$@</td><td><span class="ref">apple/App/Localizable.xcstrings:2</span></td></tr>
+        </tbody>
+      </table>
+      <p class="dato"><b>Dato real:</b> commit 14f3b16 del 11/10/2026 23:42; notarización «status: Accepted» y «source=Notarized Developer ID» en el .pkg de 489 KB.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 9 AVERÍAS ═══════════ -->
+<section class="lamina" id="l9">
+  <div class="num">LÁMINA 09 · AVERÍAS</div>
+  <h2>Dónde tocar si se rompe</h2>
+  <p class="idea">Cuatro cajones, uno por síntoma, y una lupa: casi todo lo que puede fallar está en la ventanilla de Yahoo o en el catálogo de frases.</p>
+  <svg class="dib" viewBox="240 130 760 460" role="img" aria-label="Un archivador de cuatro cajones con un síntoma en cada uno; el bichito mira con una lupa el cajón abierto">
+    <path class="sk w" d="M560 160 H820 V560 H560Z"/>
+    <path class="sk" d="M572 172 H808 V254 H572Z M572 266 H808 V348 H572Z M572 452 H808 V548 H572Z"/>
+    <path class="sk w" d="M520 380 H808 V440 H520Z"/>
+    <path class="sk w" d="M540 380 L546 356 H580 L574 380 M590 380 L598 348 H632 L624 380 M640 380 L646 362 H680 L674 380"/>
+    <text x="690" y="218" class="p" text-anchor="middle">Yahoo cambió el JSON</text>
+    <text x="690" y="312" class="p" text-anchor="middle">contesta 429</text>
+    <text x="690" y="418" class="p" text-anchor="middle">no cuadra con el Python</text>
+    <text x="690" y="506" class="p" text-anchor="middle">una frase sale en inglés</text>
+    <text x="836" y="218" class="code">Yahoo.swift:8</text>
+    <text x="836" y="418" class="code">Tests/fixtures.py</text>
+    <text x="836" y="506" class="code">Localizable.xcstrings</text>
+    <use href="#alarma" x="690" y="140"/>
+    <text x="690" y="146" class="p red" text-anchor="middle">beta rara → mira el R²</text>
+    <use href="#xh" x="420" y="560"/>
+    <path class="brazo" d="M448 508 C470 480 490 450 506 424"/><use href="#mano" x="506" y="424"/>
+    <g transform="translate(540 388)"><use href="#lupa"/></g>
+    <path class="brazo" d="M396 510 C386 522 384 534 388 546"/>
+    <text x="270" y="200" class="g">cuatro cajones</text>
+    <text x="270" y="232" class="g">y una lupa</text>
+    <path class="sk fino" d="M300 562 C500 566 800 558 980 562"/>
+  </svg>
+  <div class="ficha">
+    <div class="llano">
+      <h3>En cristiano</h3>
+      <p>Si Yahoo cambia el nombre de un campo, la decodificación falla y todo sale como «no encontrado»: mira primero las estructuras del cliente. Si Yahoo contesta 429, la app lo dice tal cual; no hay reintentos, basta esperar. Si un número no cuadra con el Python, vuelve a generar el fixture y pasa los tests: dirán exactamente qué cifra se separa. Si una frase sale en inglés, la clave del catálogo no coincide con la que genera SwiftUI.</p>
+    </div>
+    <div>
+      <table>
+        <thead><tr><th>Síntoma</th><th>Causa y qué mirar</th><th>Dónde</th></tr></thead>
+        <tbody>
+          <tr><td>todo «no encontrado»</td><td>Yahoo cambió el JSON → las estructuras Chart/Meta/Indicators del cliente</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/Yahoo.swift:8</span></td></tr>
+          <tr><td>«429»</td><td>demasiadas peticiones seguidas; el error tiene frase propia y no se reintenta</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/Yahoo.swift:27</span></td></tr>
+          <tr><td>no cuadra con el Python</td><td><code>python3 apple/CAPMKit/Tests/fixtures.py</code> y luego <code>swift test</code> en apple/CAPMKit</td><td><span class="ref">apple/CAPMKit/Tests/fixtures.py:3</span></td></tr>
+          <tr><td>frase en inglés</td><td>clave del catálogo distinta de la generada (variables como %@ o %lld, en orden)</td><td><span class="ref">apple/App/Localizable.xcstrings:2</span></td></tr>
+          <tr><td>beta rara</td><td>R² bajo o pocos meses: el aviso ya lo dice; subir el umbral de 0,15 si molesta</td><td><span class="ref">apple/CAPMKit/Sources/CAPMKit/CAPM.swift:99</span></td></tr>
+          <tr><td>hay que resellar</td><td>Release → firmar con Mac.entitlements → pkg → notarizar, con sellar.sh</td><td><span class="ref">apple/App/Mac.entitlements:4</span></td></tr>
+        </tbody>
+      </table>
+      <p class="dato"><b>Dato real:</b> el test en vivo admite una desviación de 0,05 en la beta y de 0,005 en el dividend yield respecto al fixture; si pasan meses y falla, no es un bug: toca regenerar el fixture.</p>
+    </div>
+  </div>
+</section>
+
+<p class="cierre">La beta no es un número: es la cuesta que une la acción con el mercado.</p>
+</div>
+</body>
+</html>

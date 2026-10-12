@@ -249,140 +249,18 @@
       <h1>CAPM Explainer <span class="sub">Where an expected return comes from.</span></h1>
       <p class="lead">Type a company. The app fits beta to five years of real monthly returns, then builds the expected return piece by piece.</p>
       <div class="cta">
-        <a class="btn main" href="#get">Download for Mac</a>
-        <a class="btn ghost" href="https://github.com/nachoie123/capm-explainer">Source on GitHub</a>
-      </div>
+      <a class="btn main" href="https://github.com/nachoie123/capm-explainer/releases/latest/download/CAPM-Explainer-1.0.pkg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12m0 0-5-5m5 5 5-5M5 20h14"/></svg>Download for Mac</a>
+      <a class="btn ghost" href="https://github.com/nachoie123/capm-explainer/tree/main/apple">iPhone: TestFlight soon</a>
     </div>
-
-    <figure class="fig" id="hero-fig" style="margin:0">
-      <svg class="chart" id="hero-chart" role="img" aria-label="Scatter of 59 monthly returns, Inditex against the Euro Stoxx 50, December 2021 to October 2026, with the least squares line. Its slope, beta, is 1.141."></svg>
-      <div class="eq" aria-label="Expected return 5.84% equals 2.50% plus 1.141 times 2.93%">
-        <div class="term er dn wait" id="t-er"><span class="num">5.84%</span><i>E[R], expected return</i></div>
-        <div class="op">=</div>
-        <div class="term rf up wait" id="t-rf"><span class="num">2.50%</span><i>R<sub>f</sub>, the safe rate</i></div>
-        <div class="op">+</div>
-        <div class="term b dn wait" id="t-b"><span class="num">1.141</span><i>β, slope of the line</i></div>
-        <div class="op">×</div>
-        <div class="term p up wait" id="t-p"><span class="num">2.93%</span><i><span class="lg">E[R<sub>m</sub>] − R<sub>f</sub>, </span>the premium</i></div>
-      </div>
-      <figcaption class="figbar">
-        <span>Inditex vs Euro Stoxx 50, 59 months. <span id="hero-stat" class="tab">β 1.141 · R² 44.5%</span></span>
-        <span><span id="hero-hint" style="color:var(--ink)">Drag any dot.</span> <button class="link" id="hero-reset" type="button" hidden>Reset</button> <button class="link" id="hero-replay" type="button">Replay</button></span>
-      </figcaption>
-    </figure>
-  </section>
-
-  <section id="film" class="film rv">
-    <h2>The app, in 40 seconds.</h2>
-    <p class="lead">Inditex, from ticker to 5.84%: every step the app shows, with voice and music.</p>
-    <figure class="clip" style="margin-left:0;margin-right:0">
-      <video src="capm-explainer.mp4" poster="poster.jpg" width="1920" height="1080" controls playsinline preload="none" aria-label="CAPM Explainer promo film, 40 seconds, with sound"></video>
-      <button class="play" type="button" aria-label="Play the 40 second film"><i aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5Z"/></svg></i><span>Watch the film · sound on</span><small>0:40</small></button>
-    </figure>
-  </section>
-
-  <section id="beta" class="rv">
-    <div class="col">
-      <h2>Beta is the slope that misses the least.</h2>
-      <p class="lead">Each square is one month's miss: the gap from the dot to the line, squared. Least squares (OLS) picks the slope with the smallest total area. Move the slider and try to beat it.</p>
-    </div>
-    <div class="ls">
-      <figure class="fig" style="margin:0"><svg class="chart" id="ls-chart" role="img" aria-label="The same 59 months with your line and the squared errors"></svg>
-        <figcaption class="figbar"><span><b class="t-p">Purple</b>: your line, through the average month. <b class="t-b">Green</b>: least squares.</span></figcaption></figure>
-      <div class="side">
-        <div class="slider">
-          <label for="ls-b">Your slope: <b class="t-p tab" id="ls-bv">0.40</b></label>
-          <input type="range" id="ls-b" min="0" max="2.5" step="0.01" value="0.40">
-        </div>
-        <div class="fig" style="padding:12px 12px 8px">
-          <h3>Total squared error for every slope</h3>
-          <svg class="chart" id="bowl" role="img" aria-label="Total squared error as a function of the slope: a bowl with its bottom at 1.141"></svg>
-        </div>
-        <dl class="readout">
-          <div style="display:contents"><dt>Your line, total area (%²)</dt><dd id="ls-mine">0</dd></div>
-          <div class="best" style="display:contents"><dt>Least squares, β 1.141 (%²)</dt><dd id="ls-best">0</dd></div>
-        </dl>
-        <p class="verdict" id="ls-verdict" aria-live="polite"></p>
-      </div>
-    </div>
-    <p class="cov">The app does it in one line: <span class="t-b">β</span> = Cov(R<sub>i</sub>, R<sub>m</sub>) / Var(R<sub>m</sub>), on monthly returns from Yahoo Finance, against the index of the stock's region.</p>
-  </section>
-
-  <section id="pieces" class="rv">
-    <div class="col"><h2>The other two pieces.</h2>
-    <p class="lead">Beta says how much market risk you carry. These two say what that risk pays.</p></div>
-    <div class="pieces">
-      <ol class="steps">
-        <li><span class="f"><span class="t-rf">R<sub>f</sub></span> = 2.50%</span><p>The safe rate. US stocks use the live 10-year Treasury (^TNX, 5.28% in the runs on this page). Yahoo has no Bund yield, so euro and pound stocks start from a default you can change.</p></li>
-        <li><span class="f">E[R<sub>m</sub>] = 2.36% × (1 + 3%) + 3% = 5.43%</span><p>The market's return, looking forward, by the Gordon model: the dividend yield of a Euro Stoxx 50 ETF (EXW1.DE), grown at g = 3%. Not a historical average. g is yours to change.</p></li>
-        <li><span class="f"><span class="t-p">Premium</span> = 5.43% − 2.50% = 2.93%</span><p>What the market pays above the safe rate.</p></li>
-        <li class="total"><span class="f"><span class="t-er">E[R]</span> = <span class="t-rf">2.50%</span> + <span class="t-b">1.141</span> × <span class="t-p">2.93%</span> = <span class="t-er">5.84%</span></span><p>What an investor should ask of Inditex per year, for the market risk it carries. The app's real output for ITX.MC.</p></li>
-      </ol>
-      <figure class="appclip">
-        <video data-src="media/app-itx.mp4" poster="media/app-itx.jpg" width="640" height="758" muted loop playsinline preload="none" aria-label="Screen recording of the app chaining the Gordon sub-calculation into the main formula"></video>
-        <figcaption>Real recording. The app chains the Gordon sub-step back into the main formula (its interface is in Spanish).</figcaption>
-      </figure>
-    </div>
-  </section>
-
-  <section id="limits" class="rv">
-    <div class="col"><h2>Where it breaks.</h2>
-    <p class="lead">A number with no error bar is a guess. All of these are measured on the same data.</p></div>
-    <dl class="limits">
-      <div><dt class="t-b">44.5%<small>R², Inditex</small></dt><dd>of Inditex's monthly moves are explained by the market. The other 55.5% is the company's own news, which CAPM says you are not paid for. The app prints R² next to every beta.</dd></div>
-      <div><dt>0.80 to 1.48<small>95% range for β</small></dt><dd>Standard error 0.169 over 59 months. Push both ends through the formula and the 5.84% becomes anything from <b>4.85%</b> to <b>6.84%</b>. The point estimate is the middle of a wide band.</dd></div>
-      <div><dt>1.13 → 1.18<small>β, first half → second half</small></dt><dd>Beta over the first 29 months (Dec 2021 to Apr 2024) against the last 30 (May 2024 to Oct 2026). It holds steady, so the slope is not a fluke of one period.</dd></div>
-      <div><dt class="t-er">−0.26%<small>US market premium</small></dt><dd class="wide"><p>The Gordon return of the S&amp;P 500 (5.02%: a thin 0.98% dividend yield grown at g = 4%) sits below the 10-year Treasury (5.28%). The premium turns negative, so in the US a riskier stock gets a <b>lower</b> expected return. That is the model being honest about its inputs, and why g is adjustable.</p>
-        <div class="sml">
-          <svg class="chart" id="sml" role="img" aria-label="Expected return against beta. The euro line rises with beta; the US line falls slightly, with Nvidia lowest at 4.70%."></svg>
-          <div class="tablewrap"><table>
-            <thead><tr><th>Ticker</th><th>β</th><th>R²</th><th>R<sub>f</sub></th><th>E[R]</th></tr></thead>
-            <tbody>
-              <tr><td>ITX.MC</td><td>1.141</td><td>44.5%</td><td>2.50%</td><td>5.84%</td></tr>
-              <tr><td>KO</td><td>0.284</td><td>7.8%</td><td>5.28%</td><td>5.20%</td></tr>
-              <tr><td>MSFT</td><td>1.053</td><td>37.9%</td><td>5.28%</td><td>5.01%</td></tr>
-              <tr><td>AAPL</td><td>1.098</td><td>48.2%</td><td>5.28%</td><td>4.99%</td></tr>
-              <tr><td>NVDA</td><td>2.231</td><td>50.5%</td><td>5.28%</td><td>4.70%</td></tr>
-            </tbody></table><p class="note">E[R] from the app's unrounded inputs: US R<sub>f</sub> 5.277%, US premium −0.258%.</p></div>
-        </div></dd></div>
-      <div><dt>0.02%<small>R², Repsol</small></dt><dd>Repsol's beta comes out at 0.02, but the market explains 0.02% of its moves: Yahoo's data for it is noisy. The app flags that beta as unreliable instead of passing it off as real.</dd></div>
-    </dl>
-  </section>
-
-  <section id="get" class="rv">
-    <div class="col">
-      <h2>Get it.</h2>
-      <p class="lead">Free and open source. A Mac app with the same steps, or the Python server if you prefer.</p>
-    </div>
-    <div class="cta">
-      <a class="btn main" href="https://github.com/nachoie123/capm-explainer/releases/latest/download/CAPM-Explainer-AppleSilicon.dmg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12m0 0-5-5m5 5 5-5M5 20h14"/></svg>Download for Mac</a>
-      <a class="btn ghost" href="https://github.com/nachoie123/capm-explainer/releases/latest/download/CAPM-Explainer-Intel.dmg">Intel version</a>
-    </div>
-    <p class="note">Apple Silicon (M1 or later) 35 MB · Intel 38 MB · macOS 14+ · interface in Spanish · needs internet for Yahoo Finance · educational, not financial advice · <a href="https://github.com/nachoie123/capm-explainer">Source on GitHub</a></p>
+    <p class="note">Native app · 0.5 MB · macOS 14+, Apple Silicon and Intel · Spanish and English · signed and notarized by Apple · needs internet for Yahoo Finance · educational, not financial advice · <a href="https://github.com/nachoie123/capm-explainer">Source on GitHub</a></p>
 
     <div class="install" id="install">
       <h3>Install on your Mac</h3>
-      <p class="isub">About a minute. Step 3 happens only the first time.</p>
+      <p class="isub">One click. The installer is signed with an Apple Developer ID and notarized, so macOS opens it without warnings.</p>
       <ol class="isteps">
-        <li>
-          <div><b class="t">Drag it into Applications</b><p>Open <b>the .dmg</b> and drag <b>CAPM Explainer</b> onto the <b>Applications</b> folder.</p></div>
-          <div class="iart" aria-hidden="true"><div class="iwin idrag"><div><img class="iicon" src="icon.png" alt=""><span>CAPM Explainer</span></div><div class="arr"></div><div><div class="ifold"></div><span>Applications</span></div></div></div>
-        </li>
-        <li>
-          <div><b class="t">Open it. macOS stops it. Click Done.</b><p>macOS says Apple could not verify “CAPM Explainer” is free of malware. It says that about every app that isn't notarized by Apple. Click <b>Done</b>, not Move to Trash.</p></div>
-          <div class="iart" aria-hidden="true"><div class="iwin idlg"><img class="iicon" src="icon.png" alt=""><h4>“CAPM Explainer” Not Opened</h4><p>Apple could not verify “CAPM Explainer” is free of malware that may harm your Mac or compromise your privacy.</p><span class="ibtn on">Done</span><span class="ibtn">Move to Trash</span></div></div>
-        </li>
-        <li>
-          <div><b class="t">Open Anyway, once</b><p>Open <b>System Settings → Privacy &amp; Security</b>, scroll down to <b>Security</b> and click <b>Open Anyway</b> next to “CAPM Explainer” was blocked. Confirm with your password or Touch ID. From then on it opens with a double-click.</p></div>
-          <div class="iart" aria-hidden="true"><div class="iwin iset"><div class="ihead">Privacy &amp; Security</div><div class="ilbl">Security</div><div class="irow"><span>“CAPM Explainer” was blocked to protect your Mac.</span><span class="ibtn on">Open Anyway</span></div></div></div>
-        </li>
-        <li class="noart"><div><b class="t">Then: type a company</b><p>Write a name or ticker (<b>Inditex</b>, <b>KO</b>, <b>Apple</b>) and press <b>Calcular</b>. The app speaks Spanish and needs internet for Yahoo Finance data.</p></div></li>
+        <li class="noart"><div><b class="t">Open the .pkg and click Install</b><p>The app goes straight into <b>Applications</b> and opens by itself. Nothing to drag.</p></div></li>
+        <li class="noart"><div><b class="t">Then: type a company</b><p>Write a name or ticker (<b>Inditex</b>, <b>KO</b>, <b>Apple</b>) and press <b>Calculate</b>. The app follows your system language (Spanish or English) and needs internet for Yahoo Finance data.</p></div></li>
       </ol>
-      <div class="iwhy">
-        <p><b>Why the warning?</b> Notarizing an app needs a paid Apple developer account ($99 a year). This is a free side project, so it isn't notarized. The full source code is on GitHub, and you can check that your download is exactly the file I built. In Terminal:</p>
-        <pre>shasum -a 256 ~/Downloads/CAPM-Explainer-AppleSilicon.dmg</pre><p>(Apple Silicon) should print <code>6eeddb8bc0a542db4186127caedd61975e0ee458bb6b54591ac1b9b023145f1c</code></p><pre>shasum -a 256 ~/Downloads/CAPM-Explainer-Intel.dmg</pre><p>(Intel) should print <code>aef94da3e8a374c3998397a4e8fdfcad92a31ea27f70417cdcad78f5f3c2b0fb</code></p>
-        <details><summary>Prefer the Terminal for step 3?</summary><pre>xattr -dr com.apple.quarantine "/Applications/CAPM Explainer.app"</pre></details>
-      </div>
     </div>
 
     <div class="src" id="run">
