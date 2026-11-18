@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+ <channel>
+  <title>CAPM Explainer</title>
+  <item>
+   <title>CAPM Explainer 1.2</title>
+   <pubDate>Wed, 18 Nov 2026 12:25:01 GMT</pubDate>
+   <sparkle:version>3</sparkle:version>
+   <sparkle:shortVersionString>1.2</sparkle:shortVersionString>
+   <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+   <description><![CDATA[<ul><li>The app now updates itself: it checks for a new version every day and installs it when you quit.</li><li>From this version on, new versions arrive on their own; no need to download the installer again.</li></ul>]]></description>
+   <enclosure url="https://github.com/nachoie123/capm-explainer/releases/download/v1.2/CAPMExplainer-1.2.zip" sparkle:edSignature="Z9i+CAd/gujgATGBMPm53HW67BXO6RDktkww1aek8no7J3s/4gnJHQnY4xtQPS5uLTvBpvdmSvaXcSUazgqvAw==" length="1616362" type="application/octet-stream"/>
+  </item>
+ </channel>
+</rss>
