@@ -42,5 +42,7 @@ targets:
         CURRENT_PROJECT_VERSION: "2"
         SWIFT_VERSION: "5.10"
         ENABLE_HARDENED_RUNTIME: YES
+        # objetivo de iPhone + Mac: sin esto el Mac busca Sparkle.framework en Contents/MacOS/Frameworks y no abre
+        "LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]": ["$(inherited)", "@executable_path/../Frameworks"]
         "CODE_SIGN_ENTITLEMENTS[sdk=macosx*]": App/Mac.entitlements
         TARGETED_DEVICE_FAMILY: "1,2"
