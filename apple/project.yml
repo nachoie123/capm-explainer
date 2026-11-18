@@ -11,18 +11,27 @@ targets:
     type: application
     supportedDestinations: [iOS, macOS]
     sources: [App]
-    dependencies: [{ package: CAPMKit }]
+    dependencies: [{ package: CAPMKit }, { framework: ../../../apps-nativas/sparkle-2.10.1/Sparkle.framework, embed: true, destinationFilters: [macOS] }]
     info:
       path: App/Info.plist
       properties:
         CFBundleDisplayName: CAPM Explainer
         CFBundleName: CAPM Explainer
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
         LSApplicationCategoryType: public.app-category.finance
         ITSAppUsesNonExemptEncryption: false
         CFBundleURLTypes: [{ CFBundleURLName: com.nachosanbenito.capm, CFBundleURLSchemes: [capm] }]
         NSHumanReadableCopyright: "© 2026 Ignacio San Benito"
+        # Sparkle (solo Mac): mira cada día si hay versión nueva y la instala sola al cerrar la app.
+        # Con App Sandbox, la instalación pasa por su servicio Installer (ver App/Mac.entitlements).
+        SUFeedURL: https://nachosanbenito.com/capm-explainer/appcast.xml
+        SUPublicEDKey: P4duSfYCtrpopwAjL9zcxrrLn7DYaDk3ws38jqC6Ehs=
+        SUEnableAutomaticChecks: true
+        SUAutomaticallyUpdate: true
+        SUEnableInstallerLauncherService: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.nachosanbenito.capm

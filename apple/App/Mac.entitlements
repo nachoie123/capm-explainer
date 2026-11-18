@@ -3,4 +3,11 @@
 <plist version="1.0"><dict>
   <key>com.apple.security.app-sandbox</key><true/>
   <key>com.apple.security.network.client</key><true/>
+  <!-- Sparkle con sandbox: hablar con su instalador (-spks) y su estado (-spki). Va escrito con el bundle id
+       (no $(PRODUCT_BUNDLE_IDENTIFIER)) porque sellar.sh vuelve a firmar con este fichero tal cual. -->
+  <key>com.apple.security.temporary-exception.mach-lookup.global-name</key>
+  <array>
+    <string>com.nachosanbenito.capm-spks</string>
+    <string>com.nachosanbenito.capm-spki</string>
+  </array>
 </dict></plist>
