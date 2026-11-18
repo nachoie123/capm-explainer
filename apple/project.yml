@@ -38,8 +38,8 @@ targets:
         PRODUCT_NAME: CAPM Explainer
         DEVELOPMENT_TEAM: 4HBV76K3X6
         CODE_SIGN_STYLE: Automatic
-        MARKETING_VERSION: "1.1"
-        CURRENT_PROJECT_VERSION: "2"
+        MARKETING_VERSION: "1.2"
+        CURRENT_PROJECT_VERSION: "3"
         SWIFT_VERSION: "5.10"
         ENABLE_HARDENED_RUNTIME: YES
         # objetivo de iPhone + Mac: sin esto el Mac busca Sparkle.framework en Contents/MacOS/Frameworks y no abre
